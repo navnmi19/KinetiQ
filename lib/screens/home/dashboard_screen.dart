@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import'package:gym_app/screens/data/sample_workout.dart';
+import'package:gym_app/screens/workout/workout_flow_controller.dart';
+import'package:gym_app/themes/theme_controller.dart';
 
 /// -----------------------------------------------------------------------
 /// PLACEHOLDER DATA MODELS
@@ -120,7 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     with TickerProviderStateMixin {
 
   // ---- theme -------------------------------------------------------
-  bool isDarkMode = false;
+ bool get isDarkMode => ThemeController.mode.value == ThemeMode.dark;
 
   // ---- placeholder user info ----------------------------------------
   final String userName = "user"; // TODO: replace with real user name
@@ -352,6 +355,13 @@ class _DashboardScreenState extends State<DashboardScreen>
       workoutRunState = WorkoutRunState.inProgress;
       completedExerciseCount = 1;
     });
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context)=> WorkoutFlowController(
+        initialSession:sampleWorkoutSession,),
+        ),
+
+    );
   }
 
   void _advanceActiveWorkout() {
@@ -371,6 +381,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void initState() {
     super.initState();
+    ThemeController.mode.addListener(_onThemeChanged);
     _entryController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -380,9 +391,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       curve: Curves.easeOut,
     );
   }
+  void _onThemeChanged() =>setState(() {});
 
   @override
   void dispose() {
+    ThemeController.mode.removeListener(_onThemeChanged);
     _entryController.dispose();
     super.dispose();
   }
@@ -593,7 +606,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// Small animated pill switch — replaces the old circular icon button.
   Widget _buildThemeToggle() {
     return GestureDetector(
-      onTap: () => setState(() => isDarkMode = !isDarkMode),
+      onTap: () => ThemeController.toggle(),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 320),
         curve: Curves.easeOut,

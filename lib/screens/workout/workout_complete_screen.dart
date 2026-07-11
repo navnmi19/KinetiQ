@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../themes/theme_controller.dart';
 
 class WorkoutCompleteScreen extends StatelessWidget {
   final String workoutName;
@@ -34,20 +35,23 @@ class WorkoutCompleteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.mode,
+      builder: (context, mode, _) {
+        final isDark = mode == ThemeMode.dark;
 
-    final Color bgColor = isDark ? const Color(0xFF090909) : Colors.white;
-    final Color cardColor = isDark ? const Color(0xFF141414) : Colors.white;
-    final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
-    final Color mutedColor =
-        isDark ? Colors.white60 : const Color(0xFF14532D).withOpacity(0.6);
-    final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
-    final Color borderColor = isDark ? Colors.white12 : const Color(0xFFE5F7EC);
+        final Color bgColor = isDark ? const Color(0xFF090909) : Colors.white;
+        final Color cardColor = isDark ? const Color(0xFF141414) : Colors.white;
+        final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
+        final Color mutedColor =
+            isDark ? Colors.white60 : const Color(0xFF14532D).withOpacity(0.6);
+        final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
+        final Color borderColor = isDark ? Colors.white12 : const Color(0xFFE5F7EC);
 
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             children: [
@@ -149,7 +153,7 @@ class WorkoutCompleteScreen extends StatelessWidget {
                       .toList(),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -172,6 +176,8 @@ class WorkoutCompleteScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+      },
     );
   }
 }

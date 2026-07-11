@@ -32,6 +32,12 @@ class _WorkoutFlowControllerState extends State<WorkoutFlowController> {
   int _exerciseIndex = 0;
   int _currentSet = 1;
 
+  // What happens once the current rest period ends — computed the moment
+  // "Move to Next Set" is pressed, then applied when rest finishes.
+  int _pendingExerciseIndex = 0;
+  int _pendingSet = 1;
+  bool _pendingIsNewExercise = false;
+
   DateTime? _workoutStartTime;
   int _totalRestSeconds = 0;
   int _caloriesBurned = 0;
@@ -56,26 +62,39 @@ class _WorkoutFlowControllerState extends State<WorkoutFlowController> {
     });
   }
 
+  /// Fires when "Move to Next Set" / "Finish Exercise" is pressed.
+  /// Every set is followed by rest, except the very last set of the
+  /// very last exercise — that goes straight to the Complete screen.
   void _handleMoveToNextSet() {
     final exercise = _currentExercise;
     setState(() {
       _caloriesBurned += _kCaloriesPerSet;
 
       if (_currentSet < exercise.sets) {
-        _currentSet++;
+        // More sets left on this exercise — rest, then next set.
+        _pendingExerciseIndex = _exerciseIndex;
+        _pendingSet = _currentSet + 1;
+        _pendingIsNewExercise = false;
+        _phase = _WorkoutPhase.rest;
       } else if (_isLastExercise) {
+        // Last set of the last exercise — workout's done, no rest needed.
         _phase = _WorkoutPhase.complete;
       } else {
+        // Last set of this exercise, but more exercises remain —
+        // rest, then move to the next exercise.
+        _pendingExerciseIndex = _exerciseIndex + 1;
+        _pendingSet = 1;
+        _pendingIsNewExercise = true;
         _phase = _WorkoutPhase.rest;
       }
     });
   }
 
-  void _handleMoveToNextExercise(int actualRestSeconds) {
+  void _handleRestFinished(int actualRestSeconds) {
     setState(() {
       _totalRestSeconds += actualRestSeconds;
-      _exerciseIndex++;
-      _currentSet = 1;
+      _exerciseIndex = _pendingExerciseIndex;
+      _currentSet = _pendingSet;
       _phase = _WorkoutPhase.exercise;
     });
   }
@@ -108,12 +127,12 @@ class _WorkoutFlowControllerState extends State<WorkoutFlowController> {
         );
 
       case _WorkoutPhase.rest:
-        final nextExercise = _exerciseIndex + 1 < _session.exercises.length
-            ? _session.exercises[_exerciseIndex + 1]
-            : null;
+        final upNextExercise = _session.exercises[_pendingExerciseIndex];
         return RestScreen(
-          nextExercise: nextExercise,
-          onMoveToNextExercise: _handleMoveToNextExercise,
+          isNewExercise: _pendingIsNewExercise,
+          upNextExerciseName: upNextExercise.name,
+          upNextSetLabel: 'Set $_pendingSet of ${upNextExercise.sets}',
+          onContinue: _handleRestFinished,
         );
 
       case _WorkoutPhase.complete:

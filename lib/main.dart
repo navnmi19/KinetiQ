@@ -14,7 +14,7 @@ class WorkoutApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Workout',
-      home: const DashboardScreen(),
+      home: const SplashScreen(),
     );
   }
 }

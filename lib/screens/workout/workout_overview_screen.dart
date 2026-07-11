@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../models/exercise_model.dart';
 import '../../../widgets/exercise_help_sheet.dart';
+import 'package:gym_app/themes/theme_controller.dart';
 
 class WorkoutOverviewScreen extends StatefulWidget {
   final WorkoutSession session;
@@ -41,48 +42,53 @@ class _WorkoutOverviewScreenState extends State<WorkoutOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.mode,
+      builder: (context, mode, _) {
+        final isDark = mode == ThemeMode.dark;
 
-    final Color bgColor = isDark ? const Color(0xFF090909) : Colors.white;
-    final Color cardColor = isDark ? const Color(0xFF141414) : Colors.white;
-    final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
-    final Color mutedColor =
-        isDark ? Colors.white60 : const Color(0xFF14532D).withOpacity(0.6);
-    final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
+        final Color bgColor = isDark ? const Color(0xFF090909) : Colors.white;
+        final Color cardColor = isDark ? const Color(0xFF141414) : Colors.white;
+        final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
+        final Color mutedColor =
+            isDark ? Colors.white60 : const Color(0xFF14532D).withOpacity(0.6);
+        final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context, textColor),
-            _buildMetaRow(textColor, mutedColor, accent),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ReorderableListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                itemCount: _exercises.length,
-                onReorder: _handleReorder,
-                itemBuilder: (context, index) {
-                  final exercise = _exercises[index];
-                  return _ExerciseRow(
-                    key: ValueKey(exercise.id),
-                    exercise: exercise,
-                    index: index,
-                    cardColor: cardColor,
-                    textColor: textColor,
-                    mutedColor: mutedColor,
-                    accent: accent,
-                    isDark: isDark,
-                    onTap: () => ExerciseHelpSheet.show(context, exercise),
-                  );
-                },
-              ),
+        return Scaffold(
+          backgroundColor: bgColor,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(context, textColor),
+                _buildMetaRow(textColor, mutedColor, accent),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ReorderableListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    itemCount: _exercises.length,
+                    onReorder: _handleReorder,
+                    itemBuilder: (context, index) {
+                      final exercise = _exercises[index];
+                      return _ExerciseRow(
+                        key: ValueKey(exercise.id),
+                        exercise: exercise,
+                        index: index,
+                        cardColor: cardColor,
+                        textColor: textColor,
+                        mutedColor: mutedColor,
+                        accent: accent,
+                        isDark: isDark,
+                        onTap: () => ExerciseHelpSheet.show(context, exercise),
+                      );
+                    },
+                  ),
+                ),
+                _buildStartButton(context, accent, isDark),
+              ],
             ),
-            _buildStartButton(context, accent, isDark),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

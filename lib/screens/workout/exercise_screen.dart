@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../models/exercise_model.dart';
 import '../../../widgets/exercise_help_sheet.dart';
+import 'package:gym_app/themes/theme_controller.dart';
 
 class ExerciseScreen extends StatelessWidget {
   final String workoutName;
@@ -26,50 +27,55 @@ class ExerciseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.mode,
+      builder: (context, mode, _) {
+        final isDark = mode == ThemeMode.dark;
 
-    final Color bgColor = isDark ? const Color(0xFF090909) : Colors.white;
-    final Color cardColor = isDark ? const Color(0xFF141414) : Colors.white;
-    final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
-    final Color mutedColor =
-        isDark ? Colors.white60 : const Color(0xFF14532D).withOpacity(0.6);
-    final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
-    final Color borderColor = isDark ? Colors.white12 : const Color(0xFFE5F7EC);
+        final Color bgColor = isDark ? const Color(0xFF090909) : Colors.white;
+        final Color cardColor = isDark ? const Color(0xFF141414) : Colors.white;
+        final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
+        final Color mutedColor =
+            isDark ? Colors.white60 : const Color(0xFF14532D).withOpacity(0.6);
+        final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
+        final Color borderColor = isDark ? Colors.white12 : const Color(0xFFE5F7EC);
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context, textColor),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 12),
-                    Text(
-                      exercise.name,
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: textColor),
+        return Scaffold(
+          backgroundColor: bgColor,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(context, textColor),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 12),
+                        Text(
+                          exercise.name,
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: textColor),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Exercise ${exerciseIndex + 1} of $totalExercises',
+                          style: TextStyle(fontSize: 13, color: mutedColor),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildSetRepRow(cardColor, textColor, mutedColor, borderColor, isDark),
+                        const SizedBox(height: 20),
+                        _buildBlankMannequinSpace(borderColor),
+                        const SizedBox(height: 16),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Exercise ${exerciseIndex + 1} of $totalExercises',
-                      style: TextStyle(fontSize: 13, color: mutedColor),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildSetRepRow(cardColor, textColor, mutedColor, borderColor, isDark),
-                    const SizedBox(height: 20),
-                    _buildBlankMannequinSpace(borderColor),
-                    const SizedBox(height: 16),
-                  ],
+                  ),
                 ),
-              ),
+                _buildMoveToNextSetButton(accent, isDark),
+              ],
             ),
-            _buildMoveToNextSetButton(accent, isDark),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
