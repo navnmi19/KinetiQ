@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/splash/splash_screen.dart';
-import 'screens/onboarding/program_generation_screen.dart';
+import 'screens/home/dashboard_screen.dart';
 
 void main() {
   runApp(const WorkoutApp());
@@ -14,7 +14,7 @@ class WorkoutApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Workout',
-      home: const SplashScreen(),
+      home: const DashboardScreen(),
     );
   }
 }
