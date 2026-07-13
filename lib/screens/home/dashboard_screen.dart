@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 import'package:gym_app/screens/data/sample_workout.dart';
 import'package:gym_app/screens/workout/workout_flow_controller.dart';
 import'package:gym_app/themes/theme_controller.dart';
-
-/// -----------------------------------------------------------------------
-/// PLACEHOLDER DATA MODELS
-/// No backend / business logic — everything here is static demo data that
-/// can be swapped for real values later.
-/// -----------------------------------------------------------------------
+import 'package:gym_app/screens/progress/progress_screen.dart';
 
 enum DayStatus { completed, rest, missed, upcoming }
 
@@ -1722,7 +1717,15 @@ class _DashboardScreenState extends State<DashboardScreen>
             final item = navItems[index];
 
             return GestureDetector(
-              onTap: () => setState(() => navIndex = index),
+              onTap: () {
+                if (index==navIndex)return;
+                if(index==2){
+                  Navigator.push(context,
+                  MaterialPageRoute(builder:(context)=>const ProgressScreen()),);return;}
+                  setState(() =>navIndex=index);
+                    
+                  },
+                
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 padding: const EdgeInsets.symmetric(
