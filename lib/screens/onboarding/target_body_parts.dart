@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gym_app/widgets/background_decoration.dart';
 import'time_commitment_screen.dart';
+
+
 
 class TargetBodyPartsScreen extends StatefulWidget {
   const TargetBodyPartsScreen({super.key});
@@ -7,6 +10,7 @@ class TargetBodyPartsScreen extends StatefulWidget {
   @override
   State<TargetBodyPartsScreen> createState() =>
       _TargetBodyPartsScreenState();
+    
 }
 
 class _TargetBodyPartsScreenState
@@ -67,8 +71,8 @@ class _TargetBodyPartsScreenState
           ),
         ),
 
-        child: SafeArea(
-          child: Padding(
+        child: Stack(children: [const BackgroundDecorations(),
+          SafeArea(child: Padding(
             padding: const EdgeInsets.all(20),
 
             child: Column(
@@ -276,7 +280,7 @@ SizedBox(
               ],
             ),
           ),
-        ),
+        ),],)
       ),
     );
   }
