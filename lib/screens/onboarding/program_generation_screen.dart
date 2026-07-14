@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:gym_app/widgets/background_decoration.dart';
 import 'package:lottie/lottie.dart';
 import 'package:gym_app/screens/home/dashboard_screen.dart';
 
@@ -188,7 +189,8 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
             colors: [bgGradientTop, Colors.white],
           ),
         ),
-        child: SafeArea(
+        child: Stack(children: [const BackgroundDecorations(),
+        SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Column(
@@ -205,7 +207,7 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
               ],
             ),
           ),
-        ),
+        ),],)
       ),
     );
   }

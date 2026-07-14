@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'program_generation_screen.dart';
+import'package:gym_app/widgets/background_decoration.dart';
  
 class TrainingSetupScreen extends StatefulWidget {
   const TrainingSetupScreen({super.key});
@@ -196,6 +197,7 @@ class _TrainingSetupScreenState extends State<TrainingSetupScreen>
         child: SafeArea(
           child: Stack(
             children: [
+              const BackgroundDecorations(),
               SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 140),
                 child: Column(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import'training_setup_screen.dart';
-
+import'package:gym_app/widgets/background_decoration.dart';
 class ExperienceScreen extends StatefulWidget {
   const ExperienceScreen({super.key});
 
@@ -193,9 +193,14 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
           ),
         ),
 
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
+        child: Stack(
+          children:[
+            const BackgroundDecorations(),
+
+          
+          SafeArea(child:
+          Padding(
+           padding: const EdgeInsets.symmetric(
                 horizontal: 20, vertical: 12),
 
             child: Column(
@@ -493,9 +498,9 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
                 const SizedBox(height: 12),
               ],
             ),
-          ),
+          ),),],)
         ),
-      ),
-    );
+      );
+    
   }
 }

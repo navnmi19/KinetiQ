@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'target_body_parts.dart';
+import'package:gym_app/widgets/background_decoration.dart';
+
 
 class FitnessGoalScreen extends StatefulWidget {
   const FitnessGoalScreen({super.key});
@@ -59,7 +61,8 @@ class _FitnessGoalScreenState extends State<FitnessGoalScreen> {
             ],
           ),
         ),
-        child: SafeArea(
+        child: Stack(children:[const BackgroundDecorations(),
+        SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -194,7 +197,7 @@ class _FitnessGoalScreenState extends State<FitnessGoalScreen> {
               ],
             ),
           ),
-        ),
+        ),],)
       ),
     );
   }

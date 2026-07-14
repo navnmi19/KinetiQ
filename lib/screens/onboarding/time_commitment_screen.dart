@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'capability_assessment_screen.dart';
+import'package:gym_app/widgets/background_decoration.dart';
 
 class TimeCommitmentScreen extends StatefulWidget {
   const TimeCommitmentScreen({super.key});
@@ -244,7 +245,8 @@ class _TimeCommitmentScreenState
           ),
         ),
 
-        child: SafeArea(
+        child: Stack(children: [const BackgroundDecorations(),
+        SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: 20, vertical: 12),
@@ -489,7 +491,7 @@ class _TimeCommitmentScreenState
               ],
             ),
           ),
-        ),
+        ),],)
       ),
     );
   }
