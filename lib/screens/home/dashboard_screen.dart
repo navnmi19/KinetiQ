@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gym_app/screens/data/sample_workout.dart';
 import 'package:gym_app/screens/workout/workout_flow_controller.dart';
 import 'package:gym_app/themes/theme_controller.dart';
-import '../social/friends_screen.dart';
+import '../social/social_home_screen.dart';
 import '../nutrition/nutrition_screen.dart';
 
 /// -----------------------------------------------------------------------
@@ -1798,7 +1798,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const FriendsScreen(),
+        builder: (_) => const SocialHomeScreen(),
       ),
     );
     return;
