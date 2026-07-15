@@ -124,7 +124,7 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
             horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: selected
-              ? const Color(0xFF22C55E).withOpacity(0.12)
+              ? const Color(0xFF22C55E).withValues(alpha: 0.12)
               : Colors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
@@ -289,7 +289,7 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
                                       BoxShadow(
                                         color: const Color(
                                                 0xFF22C55E)
-                                            .withOpacity(0.08),
+                                            .withValues(alpha: 0.08),
                                         blurRadius: 12,
                                         offset:
                                             const Offset(0, 4),

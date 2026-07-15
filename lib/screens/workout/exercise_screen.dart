@@ -36,7 +36,7 @@ class ExerciseScreen extends StatelessWidget {
         final Color cardColor = isDark ? const Color(0xFF141414) : Colors.white;
         final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
         final Color mutedColor =
-            isDark ? Colors.white60 : const Color(0xFF14532D).withOpacity(0.6);
+            isDark ? Colors.white60 : const Color(0xFF14532D).withValues(alpha: 0.6);
         final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
         final Color borderColor = isDark ? Colors.white12 : const Color(0xFFE5F7EC);
 
@@ -207,7 +207,7 @@ class _InfoCard extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),

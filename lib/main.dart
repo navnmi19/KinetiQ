@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'screens/splash/splash_screen.dart';
-import 'screens/home/dashboard_screen.dart';
 
 void main() {
   runApp(const WorkoutApp());

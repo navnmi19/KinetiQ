@@ -62,7 +62,7 @@ class _RestScreenState extends State<RestScreen> {
         final Color bgColor = isDark ? const Color(0xFF090909) : Colors.white;
         final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
         final Color mutedColor =
-            isDark ? Colors.white60 : const Color(0xFF14532D).withOpacity(0.6);
+            isDark ? Colors.white60 : const Color(0xFF14532D).withValues(alpha: 0.6);
         final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
         final Color trackColor = isDark ? Colors.white12 : const Color(0xFFE5F7EC);
         final Color disabledColor = isDark ? Colors.white24 : const Color(0xFFBFE6CC);

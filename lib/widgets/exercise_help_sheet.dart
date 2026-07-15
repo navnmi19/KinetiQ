@@ -32,7 +32,7 @@ class ExerciseHelpSheet extends StatelessWidget {
     final Color sheetColor = isDark ? const Color(0xFF141414) : Colors.white;
     final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
     final Color mutedColor =
-        isDark ? Colors.white70 : const Color(0xFF14532D).withOpacity(0.65);
+        isDark ? Colors.white70 : const Color(0xFF14532D).withValues(alpha: 0.65);
     final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
 
     final bool hasInstructions = exercise.instructions.isNotEmpty;
@@ -60,7 +60,7 @@ class ExerciseHelpSheet extends StatelessWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: mutedColor.withOpacity(0.4),
+                    color: mutedColor.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -86,18 +86,18 @@ class ExerciseHelpSheet extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: hasVideo ? onWatchVideo : null,
                   icon: Icon(Icons.play_circle_outline,
-                      color: hasVideo ? accent : mutedColor.withOpacity(0.5)),
+                      color: hasVideo ? accent : mutedColor.withValues(alpha: 0.5)),
                   label: Text(
                     hasVideo ? 'Watch on YouTube' : 'Video coming soon',
                     style: TextStyle(
-                      color: hasVideo ? accent : mutedColor.withOpacity(0.5),
+                      color: hasVideo ? accent : mutedColor.withValues(alpha: 0.5),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: BorderSide(
-                      color: (hasVideo ? accent : mutedColor).withOpacity(0.35),
+                      color: (hasVideo ? accent : mutedColor).withValues(alpha: 0.35),
                     ),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),

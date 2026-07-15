@@ -164,7 +164,7 @@ class _TimeCommitmentScreenState
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: selected
-                ? const Color(0xFF22C55E).withOpacity(0.12)
+                ? const Color(0xFF22C55E).withValues(alpha: 0.12)
                 : Colors.white,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
@@ -334,7 +334,7 @@ class _TimeCommitmentScreenState
                                       BoxShadow(
                                         color: const Color(
                                                 0xFF22C55E)
-                                            .withOpacity(0.08),
+                                            .withValues(alpha: 0.08),
                                         blurRadius: 12,
                                         offset:
                                             const Offset(0, 4),

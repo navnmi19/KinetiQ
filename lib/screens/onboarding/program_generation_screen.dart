@@ -259,12 +259,12 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: primaryGreen.withOpacity(_glowAnimation.value),
+                color: primaryGreen.withValues(alpha: _glowAnimation.value),
                 blurRadius: 50,
                 spreadRadius: 12,
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -369,7 +369,7 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
                 return LinearProgressIndicator(
                   value: _progressController.value,
                   minHeight: 8,
-                  backgroundColor: primaryGreen.withOpacity(0.15),
+                  backgroundColor: primaryGreen.withValues(alpha: 0.15),
                   valueColor: const AlwaysStoppedAnimation<Color>(primaryGreen),
                 );
               },
