@@ -2,19 +2,38 @@
 //
 // Social Home Screen — entry point into the Social module.
 //
-// Shows, top to bottom:
-//   1. A greeting header
-//   2. The Weekly Snapshot hero card (pulse ring + key stats)
-//   3. A horizontal comparison carousel (workout / friend consistency)
-//   4. AI placeholder section (Coach + Accountability — UI only)
+// REDESIGN NOTES (v2 — decluttering pass):
+//   The original version stacked five visually-distinct blocks (banner,
+//   hero card, section header + carousel, a buried text-link to the
+//   feed, and two full-width "coming soon" cards). That's a lot of
+//   competing containers for a first screen.
+//
+//   This pass keeps the same data/tokens but changes the *composition*:
+//     1. Greeting header — friend-request count is now a small inline
+//        chip instead of a full-width banner (one less "block").
+//     2. Weekly Snapshot hero card — unchanged, it's the strongest
+//        visual and earns the top slot.
+//     3. Recent activity — NEW. Instead of a link that takes you away
+//        from the screen, the top 3 real feed items are rendered
+//        inline, with "See all" tucked into the section header. This
+//        is the retention lever: there's always something to scroll
+//        into on open, rather than a dead-end teaser link.
+//     4. How you compare — same carousel, tighter header.
+//     5. Coming soon — the two AI placeholders are merged into a
+//        single compact card (two rows, one border) instead of two
+//        full cards, since it's non-functional content and shouldn't
+//        take as much visual weight as real data.
+//
+//   Net effect: same number of "ideas" on screen, fewer boxes, and the
+//   feed — the thing people actually come back for — is front and
+//   center instead of one tap away.
 //
 // NOTE ON STRUCTURE: this file is intentionally self-contained so it
-// compiles and runs on its own. The private models (_WeeklyStats,
-// _ComparisonEntry, _AIPlaceholder), mock data, and private widgets
-// below are staging areas — when models/, widgets/, and data/ are
-// delivered in later steps, these are lifted out verbatim into their
-// own files and this screen will simply import them instead. No
-// logic changes at that point, just relocation.
+// compiles and runs on its own. The private models, mock data, and
+// private widgets below are staging areas — when models/, widgets/,
+// and data/ are delivered in later steps, these are lifted out
+// verbatim into their own files and this screen will simply import
+// them instead. No logic changes at that point, just relocation.
 
 import 'dart:math' as math;
 
@@ -39,24 +58,20 @@ class SocialHomeScreen extends StatelessWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
+            // ---- Header ------------------------------------------------
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
               sliver: SliverToBoxAdapter(
-                child: _GreetingHeader(tokens: tokens),
-              ),
-            ),
-            if (_mockPendingRequestsCount > 0)
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                sliver: SliverToBoxAdapter(
-                  child: _RequestsBanner(
-                    tokens: tokens,
-                    count: _mockPendingRequestsCount,
-                  ),
+                child: _GreetingHeader(
+                  tokens: tokens,
+                  pendingRequests: _mockPendingRequestsCount,
                 ),
               ),
+            ),
+
+            // ---- Hero: weekly snapshot ----------------------------------
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
               sliver: SliverToBoxAdapter(
                 child: _WeeklySnapshotCard(
                   tokens: tokens,
@@ -64,6 +79,35 @@ class SocialHomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            // ---- Recent activity (real feed, not a link) -----------------
+            SliverToBoxAdapter(
+              child: _SectionHeader(
+                tokens: tokens,
+                title: 'Recent activity',
+                subtitle: 'From people you train with',
+                trailing: _SeeAllLink(
+                  tokens: tokens,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ActivityFeedScreen()),
+                  ),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: _FeedPreviewCard(
+                  tokens: tokens,
+                  items: _mockFeedItems.take(3).toList(),
+                  onOpenFeed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ActivityFeedScreen()),
+                  ),
+                ),
+              ),
+            ),
+
+            // ---- How you compare -----------------------------------------
             SliverToBoxAdapter(
               child: _SectionHeader(
                 tokens: tokens,
@@ -77,50 +121,14 @@ class SocialHomeScreen extends StatelessWidget {
                 entries: _mockComparisons,
               ),
             ),
+
+            // ---- Coming soon (condensed, de-emphasized) -------------------
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 40),
               sliver: SliverToBoxAdapter(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ActivityFeedScreen()),
-                    ),
-                    style: TextButton.styleFrom(
-                      foregroundColor: tokens.ember,
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      'View full activity feed',
-                      style: tokens.body(size: 12.5, color: tokens.ember, weight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: _SectionHeader(
-                tokens: tokens,
-                title: 'Your AI companions',
-                subtitle: 'Coming soon — a preview of what\'s next',
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    for (int i = 0; i < _mockAIPlaceholders.length; i++) ...[
-                      _AIPlaceholderCard(
-                        tokens: tokens,
-                        data: _mockAIPlaceholders[i],
-                      ),
-                      if (i != _mockAIPlaceholders.length - 1)
-                        const SizedBox(height: 14),
-                    ],
-                  ],
+                child: _ComingSoonCard(
+                  tokens: tokens,
+                  items: _mockAIPlaceholders,
                 ),
               ),
             ),
@@ -257,6 +265,38 @@ class _AIPlaceholder {
       };
 }
 
+enum _FeedKind { completedWorkout, personalRecord, streakMilestone, joinedChallenge }
+
+class _FeedItem {
+  final String name;
+  final String initials;
+  final _FeedKind kind;
+  final String detail; // e.g. "Leg Day · 52 min" or "New 5k PR: 24:18"
+  final String timeAgo;
+
+  const _FeedItem({
+    required this.name,
+    required this.initials,
+    required this.kind,
+    required this.detail,
+    required this.timeAgo,
+  });
+
+  IconData get icon => switch (kind) {
+        _FeedKind.completedWorkout => Icons.check_circle_outline_rounded,
+        _FeedKind.personalRecord => Icons.emoji_events_outlined,
+        _FeedKind.streakMilestone => Icons.local_fire_department_outlined,
+        _FeedKind.joinedChallenge => Icons.flag_outlined,
+      };
+
+  String get verb => switch (kind) {
+        _FeedKind.completedWorkout => 'completed a workout',
+        _FeedKind.personalRecord => 'set a new PR',
+        _FeedKind.streakMilestone => 'hit a streak milestone',
+        _FeedKind.joinedChallenge => 'joined a challenge',
+      };
+}
+
 // ============================================================
 // MOCK DATA
 // (staging area for a future data/mock_social_data.dart)
@@ -303,14 +343,50 @@ const _mockAIPlaceholders = [
   _AIPlaceholder(
     kind: _AIPlaceholderKind.coach,
     title: 'AI Coach suggestions',
-    description:
-        'Personalized nudges on pacing, recovery, and what to train next.',
+    description: 'Personalized nudges on pacing, recovery, and what\'s next.',
   ),
   _AIPlaceholder(
     kind: _AIPlaceholderKind.accountability,
     title: 'Accountability suggestions',
-    description:
-        'Smart prompts to check in with training partners who need a push.',
+    description: 'Smart prompts to check in with partners who need a push.',
+  ),
+];
+
+const _mockFeedItems = [
+  _FeedItem(
+    name: 'Priya Nair',
+    initials: 'PN',
+    kind: _FeedKind.personalRecord,
+    detail: 'New 5k PR — 24:18',
+    timeAgo: '18m ago',
+  ),
+  _FeedItem(
+    name: 'Marcus Cole',
+    initials: 'MC',
+    kind: _FeedKind.completedWorkout,
+    detail: 'Leg Day · 52 min',
+    timeAgo: '1h ago',
+  ),
+  _FeedItem(
+    name: 'Sara Kim',
+    initials: 'SK',
+    kind: _FeedKind.streakMilestone,
+    detail: '10-day streak',
+    timeAgo: '3h ago',
+  ),
+  _FeedItem(
+    name: 'Devon Wallace',
+    initials: 'DW',
+    kind: _FeedKind.joinedChallenge,
+    detail: 'August Mileage Challenge',
+    timeAgo: '5h ago',
+  ),
+  _FeedItem(
+    name: 'Aisha Khan',
+    initials: 'AK',
+    kind: _FeedKind.completedWorkout,
+    detail: 'Upper Body · 41 min',
+    timeAgo: 'Yesterday',
   ),
 ];
 
@@ -319,9 +395,13 @@ const _mockAIPlaceholders = [
 // (staging area for a future widgets/ folder)
 // ============================================================
 
+/// Greeting row. Pending friend requests, if any, show as a small
+/// inline chip beneath the title rather than a full-width banner —
+/// keeps the header to one visual block instead of two.
 class _GreetingHeader extends StatelessWidget {
   final _SocialTokens tokens;
-  const _GreetingHeader({required this.tokens});
+  final int pendingRequests;
+  const _GreetingHeader({required this.tokens, required this.pendingRequests});
 
   @override
   Widget build(BuildContext context) {
@@ -333,14 +413,18 @@ class _GreetingHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Your week, mapped out', style: tokens.display(size: 24)),
-              const SizedBox(height: 4),
-              Text(
-                'Monday – Sunday',
-                style: tokens.body(size: 13, color: tokens.inkMuted),
-              ),
+              const SizedBox(height: 6),
+              if (pendingRequests > 0)
+                _RequestsChip(tokens: tokens, count: pendingRequests)
+              else
+                Text(
+                  'Monday – Sunday',
+                  style: tokens.body(size: 13, color: tokens.inkMuted),
+                ),
             ],
           ),
         ),
+        const SizedBox(width: 12),
         _IconBadge(
           tokens: tokens,
           icon: Icons.search_rounded,
@@ -357,6 +441,40 @@ class _GreetingHeader extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Compact, inline pending-requests indicator — no background block,
+/// just colored text + icon so it reads as metadata, not a card.
+class _RequestsChip extends StatelessWidget {
+  final _SocialTokens tokens;
+  final int count;
+  const _RequestsChip({required this.tokens, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const FriendRequestsScreen()),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.person_add_alt_1_rounded, size: 14, color: tokens.signal),
+            const SizedBox(width: 5),
+            Text(
+              '$count friend request${count == 1 ? '' : 's'} waiting',
+              style: tokens.body(size: 13, color: tokens.signal, weight: FontWeight.w600),
+            ),
+            const SizedBox(width: 2),
+            Icon(Icons.chevron_right_rounded, size: 15, color: tokens.signal),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -390,68 +508,65 @@ class _IconBadge extends StatelessWidget {
   }
 }
 
+/// Section header with an optional trailing action (e.g. "See all"),
+/// so a link never needs its own separate row below the section.
 class _SectionHeader extends StatelessWidget {
   final _SocialTokens tokens;
   final String title;
   final String subtitle;
+  final Widget? trailing;
   const _SectionHeader({
     required this.tokens,
     required this.title,
     required this.subtitle,
+    this.trailing,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(20, 26, 20, 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(title, style: tokens.display(size: 18)),
-          const SizedBox(height: 2),
-          Text(subtitle, style: tokens.body(size: 13, color: tokens.inkMuted)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: tokens.display(size: 18)),
+                const SizedBox(height: 2),
+                Text(subtitle, style: tokens.body(size: 13, color: tokens.inkMuted)),
+              ],
+            ),
+          ),
+          if (trailing != null) trailing!,
         ],
       ),
     );
   }
 }
 
-/// Banner surfacing pending friend requests, linking into
-/// FriendRequestsScreen.
-class _RequestsBanner extends StatelessWidget {
+class _SeeAllLink extends StatelessWidget {
   final _SocialTokens tokens;
-  final int count;
-  const _RequestsBanner({required this.tokens, required this.count});
+  final VoidCallback onTap;
+  const _SeeAllLink({required this.tokens, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const FriendRequestsScreen()),
-        ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: tokens.signal.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.person_add_alt_1_rounded, size: 18, color: tokens.signal),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  '$count friend request${count == 1 ? '' : 's'} waiting',
-                  style: tokens.body(size: 13, weight: FontWeight.w600),
-                ),
-              ),
-              Icon(Icons.chevron_right_rounded, size: 18, color: tokens.inkFaint),
-            ],
-          ),
-        ),
+    return TextButton(
+      onPressed: onTap,
+      style: TextButton.styleFrom(
+        foregroundColor: tokens.ember,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('See all', style: tokens.body(size: 13, color: tokens.ember, weight: FontWeight.w600)),
+          Icon(Icons.chevron_right_rounded, size: 16, color: tokens.ember),
+        ],
       ),
     );
   }
@@ -718,6 +833,130 @@ class _PulseRingPainter extends CustomPainter {
   }
 }
 
+/// Real feed content, inline on the home screen. This is the
+/// retention surface: every time the screen opens there's something
+/// fresh to read, and scrolling into it should feel like the natural
+/// next move after glancing at the weekly snapshot.
+class _FeedPreviewCard extends StatelessWidget {
+  final _SocialTokens tokens;
+  final List<_FeedItem> items;
+  final VoidCallback onOpenFeed;
+  const _FeedPreviewCard({
+    required this.tokens,
+    required this.items,
+    required this.onOpenFeed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: tokens.surfaceElevated,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: tokens.hairline),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < items.length; i++) ...[
+            _FeedPreviewTile(tokens: tokens, item: items[i]),
+            if (i != items.length - 1)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Divider(height: 1, color: tokens.hairline),
+              ),
+          ],
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onOpenFeed,
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Center(
+                  child: Text(
+                    'View full activity feed',
+                    style: tokens.body(size: 12.5, color: tokens.inkMuted, weight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedPreviewTile extends StatelessWidget {
+  final _SocialTokens tokens;
+  final _FeedItem item;
+  const _FeedPreviewTile({required this.tokens, required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const FriendProfileScreen()),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: tokens.signal.withValues(alpha: 0.14),
+                child: Text(
+                  item.initials,
+                  style: tokens.body(size: 12, color: tokens.signal, weight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: item.name,
+                            style: tokens.body(size: 13.5, weight: FontWeight.w600),
+                          ),
+                          TextSpan(
+                            text: ' ${item.verb}',
+                            style: tokens.body(size: 13.5, color: tokens.inkMuted),
+                          ),
+                        ],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.detail,
+                      style: tokens.body(size: 12, color: tokens.inkFaint),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Icon(item.icon, size: 16, color: tokens.ember),
+                  const SizedBox(height: 4),
+                  Text(item.timeAgo, style: tokens.body(size: 10.5, color: tokens.inkFaint)),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Horizontally scrolling row of comparison cards.
 class _ComparisonCarousel extends StatelessWidget {
   final _SocialTokens tokens;
@@ -839,73 +1078,72 @@ class _ComparisonCard extends StatelessWidget {
   }
 }
 
-/// Quiet, dashed-border placeholder for a not-yet-built AI feature.
-/// Deliberately muted so it never competes with real content.
-class _AIPlaceholderCard extends StatelessWidget {
+/// Both AI placeholders collapsed into a single quiet card — two
+/// compact rows separated by a hairline, instead of two full cards.
+/// It's non-functional preview content, so it shouldn't compete
+/// visually with the real data above it.
+class _ComingSoonCard extends StatelessWidget {
   final _SocialTokens tokens;
-  final _AIPlaceholder data;
-  const _AIPlaceholderCard({required this.tokens, required this.data});
+  final List<_AIPlaceholder> items;
+  const _ComingSoonCard({required this.tokens, required this.items});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Coming soon')),
-          );
-        },
-        child: CustomPaint(
-          painter: _DashedRRectPainter(
-            color: tokens.hairline,
-            radius: 20,
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: tokens.surfaceSunken.withValues(alpha: tokens.isDark ? 0.5 : 0.6),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: tokens.signal.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
+    return CustomPaint(
+      painter: _DashedRRectPainter(color: tokens.hairline, radius: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: tokens.surfaceSunken.withValues(alpha: tokens.isDark ? 0.5 : 0.6),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+              child: Row(
+                children: [
+                  Text(
+                    'Your AI companions',
+                    style: tokens.body(size: 13, weight: FontWeight.w600, color: tokens.inkMuted),
                   ),
-                  child: Icon(data.icon, size: 20, color: tokens.signal),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                  const SizedBox(width: 8),
+                  _ComingSoonPill(tokens: tokens),
+                ],
+              ),
+            ),
+            for (final item in items)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: tokens.signal.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(item.icon, size: 17, color: tokens.signal),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              data.title,
-                              style: tokens.body(size: 14, weight: FontWeight.w600),
-                            ),
+                          Text(item.title, style: tokens.body(size: 13, weight: FontWeight.w600)),
+                          const SizedBox(height: 2),
+                          Text(
+                            item.description,
+                            style: tokens.body(size: 11.5, color: tokens.inkMuted),
                           ),
-                          _ComingSoonPill(tokens: tokens),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        data.description,
-                        style: tokens.body(size: 12.5, color: tokens.inkMuted),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            const SizedBox(height: 6),
+          ],
         ),
       ),
     );
