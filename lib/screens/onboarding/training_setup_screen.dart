@@ -335,14 +335,14 @@ class _TrainingSetupScreenState extends State<TrainingSetupScreen>
                     border: Border.all(
                       color: isSelected
                           ? primaryGreen
-                          : Colors.black.withOpacity(0.05),
+                          : Colors.black.withValues(alpha: 0.05),
                       width: isSelected ? 2.5 : 1,
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: isSelected
-                            ? primaryGreen.withOpacity(0.35)
-                            : Colors.black.withOpacity(0.06),
+                            ? primaryGreen.withValues(alpha: 0.35)
+                            : Colors.black.withValues(alpha: 0.06),
                         blurRadius: isSelected ? 24 : 14,
                         offset: const Offset(0, 10),
                       ),
@@ -424,9 +424,9 @@ class _TrainingSetupScreenState extends State<TrainingSetupScreen>
             height: 52,
             margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: primaryGreen.withOpacity(0.08),
+              color: primaryGreen.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: primaryGreen.withOpacity(0.25)),
+              border: Border.all(color: primaryGreen.withValues(alpha: 0.25)),
             ),
           ),
           ListWheelScrollView.useDelegate(
@@ -447,7 +447,7 @@ class _TrainingSetupScreenState extends State<TrainingSetupScreen>
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                     color: isSelected
                         ? primaryGreen
-                        : Colors.black.withOpacity(0.35),
+                        : Colors.black.withValues(alpha: 0.35),
                   ),
                   child: Center(
                     child: AnimatedScale(
@@ -472,7 +472,7 @@ class _TrainingSetupScreenState extends State<TrainingSetupScreen>
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -542,7 +542,7 @@ class _TrainingSetupScreenState extends State<TrainingSetupScreen>
                         ),
                       ),
                       elevation: isSelected ? 4 : 0,
-                      shadowColor: primaryGreen.withOpacity(0.4),
+                      shadowColor: primaryGreen.withValues(alpha: 0.4),
                     ),
                   );
                 }),
@@ -564,12 +564,12 @@ class _TrainingSetupScreenState extends State<TrainingSetupScreen>
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.55),
+            color: Colors.white.withValues(alpha: 0.55),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.6)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
             boxShadow: [
               BoxShadow(
-                color: primaryGreen.withOpacity(0.18),
+                color: primaryGreen.withValues(alpha: 0.18),
                 blurRadius: 24,
                 offset: const Offset(0, 12),
               ),
@@ -581,7 +581,7 @@ class _TrainingSetupScreenState extends State<TrainingSetupScreen>
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: primaryGreen.withOpacity(0.15),
+                  color: primaryGreen.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -656,7 +656,7 @@ class _TrainingSetupScreenState extends State<TrainingSetupScreen>
             boxShadow: _isComplete
                 ? [
                     BoxShadow(
-                      color: primaryGreen.withOpacity(0.45),
+                      color: primaryGreen.withValues(alpha: 0.45),
                       blurRadius: 22,
                       offset: const Offset(0, 10),
                     ),

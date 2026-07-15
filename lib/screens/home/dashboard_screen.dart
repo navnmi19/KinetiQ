@@ -613,7 +613,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.06),
+              color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.06),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -634,7 +634,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: _accent.withOpacity(0.4),
+                      color: _accent.withValues(alpha: 0.4),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -692,7 +692,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
+              color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -726,7 +726,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           itemCount: calendarDays.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          separatorBuilder: (_, _) => const SizedBox(width: 10),
           itemBuilder: (context, index) {
             final day = calendarDays[index];
             final selected = index == selectedDayIndex;
@@ -744,7 +744,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   boxShadow: selected
                       ? [
                           BoxShadow(
-                            color: _accent.withOpacity(0.38),
+                            color: _accent.withValues(alpha: 0.38),
                             blurRadius: 16,
                             spreadRadius: 1,
                             offset: const Offset(0, 4),
@@ -753,7 +753,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       : [
                           BoxShadow(
                             color: Colors.black
-                                .withOpacity(isDarkMode ? 0.25 : 0.05),
+                                .withValues(alpha: isDarkMode ? 0.25 : 0.05),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
@@ -822,7 +822,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             ? []
             : [
                 BoxShadow(
-                  color: color.withOpacity(0.5),
+                  color: color.withValues(alpha: 0.5),
                   blurRadius: 4,
                 ),
               ],
@@ -971,12 +971,12 @@ class _DashboardScreenState extends State<DashboardScreen>
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: isDarkMode
-              ? Colors.white.withOpacity(0.06)
-              : (isUp ? _accent.withOpacity(0.08) : _downColor.withOpacity(0.08)),
+              ? Colors.white.withValues(alpha: 0.06)
+              : (isUp ? _accent.withValues(alpha: 0.08) : _downColor.withValues(alpha: 0.08)),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDarkMode ? 0.2 : 0.04),
+              color: Colors.black.withValues(alpha: isDarkMode ? 0.2 : 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -1151,7 +1151,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.25 : 0.05),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.05),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -1457,7 +1457,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -1557,7 +1557,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: _accent.withOpacity(0.12),
+                  color: _accent.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(11),
                 ),
                 child: Icon(Icons.auto_awesome_rounded, color: _accent, size: 18),
@@ -1652,7 +1652,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.25 : 0.04),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1665,7 +1665,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             width: 30,
             height: 30,
             decoration: BoxDecoration(
-              color: (stat.isPositive ? _accent : _downColor).withOpacity(0.12),
+              color: (stat.isPositive ? _accent : _downColor).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(9),
             ),
             child: Icon(stat.icon,
@@ -1702,7 +1702,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         color: _cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -1732,7 +1732,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: selected
-                      ? _accent.withOpacity(0.12)
+                      ? _accent.withValues(alpha: 0.12)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -1782,7 +1782,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.25 : 0.05),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.05),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -1872,8 +1872,8 @@ class _SplinePainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            lineColor.withOpacity(0.22),
-            lineColor.withOpacity(0.0),
+            lineColor.withValues(alpha: 0.22),
+            lineColor.withValues(alpha: 0.0),
           ],
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
@@ -1893,7 +1893,7 @@ class _SplinePainter extends CustomPainter {
         touchedIndex! >= 0 &&
         touchedIndex! < points.length) {
       final p = points[touchedIndex!];
-      canvas.drawCircle(p, 8, Paint()..color = lineColor.withOpacity(0.2));
+      canvas.drawCircle(p, 8, Paint()..color = lineColor.withValues(alpha: 0.2));
       canvas.drawCircle(p, 4.5, Paint()..color = lineColor);
       canvas.drawCircle(
         p,
@@ -1977,7 +1977,7 @@ class _PulseBadgeState extends State<_PulseBadge>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: widget.color.withOpacity(0.12),
+          color: widget.color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(20),
         ),
         child: widget.child,

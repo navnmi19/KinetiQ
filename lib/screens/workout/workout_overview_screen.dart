@@ -51,7 +51,7 @@ class _WorkoutOverviewScreenState extends State<WorkoutOverviewScreen> {
         final Color cardColor = isDark ? const Color(0xFF141414) : Colors.white;
         final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
         final Color mutedColor =
-            isDark ? Colors.white60 : const Color(0xFF14532D).withOpacity(0.6);
+            isDark ? Colors.white60 : const Color(0xFF14532D).withValues(alpha: 0.6);
         final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
 
         return Scaffold(
@@ -185,7 +185,7 @@ class _MuscleTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: accent.withOpacity(0.12),
+        color: accent.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -236,7 +236,7 @@ class _ExerciseRow extends StatelessWidget {
                   ? []
                   : [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -249,7 +249,7 @@ class _ExerciseRow extends StatelessWidget {
                   height: 44,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: accent.withOpacity(0.12),
+                    color: accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(Icons.fitness_center, color: accent, size: 22),

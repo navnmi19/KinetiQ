@@ -22,11 +22,11 @@ class ThemeToggleButton extends StatelessWidget {
             decoration: BoxDecoration(
               // NOTE: light-mode color was cut off in your screenshot —
               // double check this hex matches your original exactly.
-              color: isDarkMode ? const Color(0xFF2A2A2D) : const Color(0xFFFEFF6F0),
+              color: isDarkMode ? const Color(0xFF2A2A2D) : const Color(0xfffeff6f0),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.06),
+                  color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.06),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -46,7 +46,7 @@ class ThemeToggleButton extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: accent.withOpacity(0.4),
+                          color: accent.withValues(alpha: 0.4),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),

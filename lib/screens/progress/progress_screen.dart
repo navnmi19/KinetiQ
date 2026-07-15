@@ -319,7 +319,7 @@ class _ProgressBottomNav extends StatelessWidget {
         color: colors.cardSurface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(colors.isDark ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -346,7 +346,7 @@ class _ProgressBottomNav extends StatelessWidget {
                 duration: const Duration(milliseconds: 250),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: selected ? colors.accent.withOpacity(0.12) : Colors.transparent,
+                  color: selected ? colors.accent.withValues(alpha: 0.12) : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(

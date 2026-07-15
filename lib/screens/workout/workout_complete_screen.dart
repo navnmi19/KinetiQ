@@ -44,7 +44,7 @@ class WorkoutCompleteScreen extends StatelessWidget {
         final Color cardColor = isDark ? const Color(0xFF141414) : Colors.white;
         final Color textColor = isDark ? Colors.white : const Color(0xFF14532D);
         final Color mutedColor =
-            isDark ? Colors.white60 : const Color(0xFF14532D).withOpacity(0.6);
+            isDark ? Colors.white60 : const Color(0xFF14532D).withValues(alpha: 0.6);
         final Color accent = isDark ? const Color(0xFFFF8A00) : const Color(0xFF22C55E);
         final Color borderColor = isDark ? Colors.white12 : const Color(0xFFE5F7EC);
 
@@ -60,7 +60,7 @@ class WorkoutCompleteScreen extends StatelessWidget {
                 width: 84,
                 height: 84,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: accent.withOpacity(0.15), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: accent.withValues(alpha: 0.15), shape: BoxShape.circle),
                 child: Icon(Icons.check, color: accent, size: 44),
               ),
               const SizedBox(height: 20),
@@ -142,7 +142,7 @@ class WorkoutCompleteScreen extends StatelessWidget {
                       .map((group) => Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: accent.withOpacity(0.12),
+                              color: accent.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(

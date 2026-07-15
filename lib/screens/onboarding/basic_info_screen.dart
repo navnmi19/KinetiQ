@@ -159,7 +159,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 30,
             offset: const Offset(0, 12),
           ),
@@ -251,7 +251,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         boxShadow: isNameFocused
             ? [
                 BoxShadow(
-                  color: green.withOpacity(0.25),
+                  color: green.withValues(alpha: 0.25),
                   blurRadius: 16,
                   spreadRadius: 1,
                 )
@@ -271,7 +271,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
             color: isNameFocused ? green : Colors.black38,
           ),
           filled: true,
-          fillColor: mint25.withOpacity(0.5),
+          fillColor: mint25.withValues(alpha: 0.5),
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
@@ -294,7 +294,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
-        color: mint25.withOpacity(0.5),
+        color: mint25.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -362,12 +362,12 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         width: double.infinity,
         height: 56,
         decoration: BoxDecoration(
-          color: isFormValid ? green : green.withOpacity(0.4),
+          color: isFormValid ? green : green.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(18),
           boxShadow: isFormValid
               ? [
                   BoxShadow(
-                    color: green.withOpacity(0.35),
+                    color: green.withValues(alpha: 0.35),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   )
