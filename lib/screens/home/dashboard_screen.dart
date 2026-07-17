@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import'package:gym_app/screens/data/sample_workout.dart';
-import'package:gym_app/screens/workout/workout_flow_controller.dart';
-import'package:gym_app/themes/theme_controller.dart';
+import 'package:gym_app/screens/data/sample_workout.dart';
+import 'package:gym_app/screens/workout/workout_flow_controller.dart';
+import 'package:gym_app/themes/theme_controller.dart';
+import '../social/friends_screen.dart';
+import '../nutrition/nutrition_screen.dart';
 import 'package:gym_app/screens/progress/progress_screen.dart';
 
 enum DayStatus { completed, rest, missed, upcoming }
@@ -116,9 +118,8 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen>
     with TickerProviderStateMixin {
-
   // ---- theme -------------------------------------------------------
- bool get isDarkMode => ThemeController.mode.value == ThemeMode.dark;
+  bool get isDarkMode => ThemeController.mode.value == ThemeMode.dark;
 
   // ---- placeholder user info ----------------------------------------
   final String userName = "user"; // TODO: replace with real user name
@@ -165,7 +166,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       exercises: [
         WorkoutExercise(name: "Back Squat", setsReps: "4 × 8", done: true),
         WorkoutExercise(name: "Leg Press", setsReps: "3 × 12", done: true),
-        WorkoutExercise(name: "Romanian Deadlift", setsReps: "3 × 10", done: true),
+        WorkoutExercise(
+          name: "Romanian Deadlift",
+          setsReps: "3 × 10",
+          done: true,
+        ),
       ],
     ),
     2: const WorkoutSession(
@@ -185,7 +190,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       exercises: [
         WorkoutExercise(name: "Bench Press", setsReps: "4 × 8", done: false),
         WorkoutExercise(name: "Incline Press", setsReps: "3 × 10", done: false),
-        WorkoutExercise(name: "Shoulder Press", setsReps: "3 × 12", done: false),
+        WorkoutExercise(
+          name: "Shoulder Press",
+          setsReps: "3 × 12",
+          done: false,
+        ),
       ],
     ),
     4: const WorkoutSession(
@@ -298,8 +307,20 @@ class _DashboardScreenState extends State<DashboardScreen>
     "Steps": "",
   };
 
-  final List<String> weekLabels = const ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  final List<String> monthLabels = const ["Week 1", "Week 2", "Week 3", "Week 4"];
+  final List<String> weekLabels = const [
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+  ];
+  final List<String> monthLabels = const [
+    "Week 1",
+    "Week 2",
+    "Week 3",
+    "Week 4",
+  ];
 
   // AI insight — data-driven metric lines, never a paragraph.
   final List<AIInsightItem> aiInsights = const [
@@ -325,10 +346,30 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   // Quick stats — exactly four
   final List<QuickStat> quickStats = const [
-    QuickStat(icon: Icons.trending_up, label: "Strength", value: "+12%", isPositive: true),
-    QuickStat(icon: Icons.bar_chart_rounded, label: "Volume", value: "+18%", isPositive: true),
-    QuickStat(icon: Icons.monitor_weight_outlined, label: "Weight", value: "-1.3 kg", isPositive: true),
-    QuickStat(icon: Icons.local_fire_department_rounded, label: "Streak", value: "12 days", isPositive: true),
+    QuickStat(
+      icon: Icons.trending_up,
+      label: "Strength",
+      value: "+12%",
+      isPositive: true,
+    ),
+    QuickStat(
+      icon: Icons.bar_chart_rounded,
+      label: "Volume",
+      value: "+18%",
+      isPositive: true,
+    ),
+    QuickStat(
+      icon: Icons.monitor_weight_outlined,
+      label: "Weight",
+      value: "-1.3 kg",
+      isPositive: true,
+    ),
+    QuickStat(
+      icon: Icons.local_fire_department_rounded,
+      label: "Streak",
+      value: "12 days",
+      isPositive: true,
+    ),
   ];
 
   // ---- bottom nav -----------------------------------------------
@@ -337,7 +378,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     _NavItem(icon: Icons.home_rounded, label: "Home"),
     _NavItem(icon: Icons.restaurant_menu_rounded, label: "Nutrition"),
     _NavItem(icon: Icons.show_chart_rounded, label: "Progress"),
-    _NavItem(icon: Icons.person_rounded, label: "Profile"),
+    _NavItem(icon: Icons.person_rounded, label: "Friends"),
   ];
 
   // ---- active workout tracking (today only) --------------------------
@@ -352,17 +393,19 @@ class _DashboardScreenState extends State<DashboardScreen>
     });
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context)=> WorkoutFlowController(
-        initialSession:sampleWorkoutSession,),
-        ),
-
+      MaterialPageRoute(
+        builder: (context) =>
+            WorkoutFlowController(initialSession: sampleWorkoutSession),
+      ),
     );
   }
 
   void _advanceActiveWorkout() {
     setState(() {
-      completedExerciseCount =
-          (completedExerciseCount + 1).clamp(0, totalExercisesToday);
+      completedExerciseCount = (completedExerciseCount + 1).clamp(
+        0,
+        totalExercisesToday,
+      );
       if (completedExerciseCount >= totalExercisesToday) {
         workoutRunState = WorkoutRunState.completed;
       }
@@ -386,7 +429,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       curve: Curves.easeOut,
     );
   }
-  void _onThemeChanged() =>setState(() {});
+
+  void _onThemeChanged() => setState(() {});
 
   @override
   void dispose() {
@@ -435,8 +479,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       selectedPeriod == "Week" ? weekLabels : monthLabels;
 
   double get _todayValue => _currentSeries.last;
-  double get _yesterdayValue =>
-      _currentSeries[_currentSeries.length - 2];
+  double get _yesterdayValue => _currentSeries[_currentSeries.length - 2];
 
   double get _percentChange {
     if (_yesterdayValue == 0) return 0;
@@ -469,8 +512,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   Color get _textPrimary => isDarkMode ? Colors.white : const Color(0xFF15181D);
   Color get _textSecondary =>
       isDarkMode ? Colors.white60 : const Color(0xFF6B7280);
-  Color get _divider =>
-      isDarkMode ? Colors.white12 : const Color(0xFFEFEFEF);
+  Color get _divider => isDarkMode ? Colors.white12 : const Color(0xFFEFEFEF);
   Color get _downColor =>
       isDarkMode ? const Color(0xFFEF5350) : const Color(0xFFE53935);
 
@@ -614,6 +656,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.06),
+              color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.06),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -624,8 +667,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             AnimatedAlign(
               duration: const Duration(milliseconds: 320),
               curve: Curves.easeOut,
-              alignment:
-                  isDarkMode ? Alignment.centerRight : Alignment.centerLeft,
+              alignment: isDarkMode
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
               child: Container(
                 width: 26,
                 height: 26,
@@ -635,13 +679,16 @@ class _DashboardScreenState extends State<DashboardScreen>
                   boxShadow: [
                     BoxShadow(
                       color: _accent.withValues(alpha: 0.4),
+                      color: _accent.withValues(alpha: 0.4),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
                 child: Icon(
-                  isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                  isDarkMode
+                      ? Icons.dark_mode_rounded
+                      : Icons.light_mode_rounded,
                   size: 15,
                   color: Colors.white,
                 ),
@@ -693,16 +740,13 @@ class _DashboardScreenState extends State<DashboardScreen>
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
+              color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
           ],
         ),
-        child: Icon(
-          Icons.emoji_events_rounded,
-          color: _accent,
-          size: 16,
-        ),
+        child: Icon(Icons.emoji_events_rounded, color: _accent, size: 16),
       ),
     );
   }
@@ -716,16 +760,15 @@ class _DashboardScreenState extends State<DashboardScreen>
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeOut,
       tween: Tween(begin: const Offset(0.05, 0), end: Offset.zero),
-      builder: (context, offset, child) => Transform.translate(
-        offset: Offset(offset.dx * 40, 0),
-        child: child,
-      ),
+      builder: (context, offset, child) =>
+          Transform.translate(offset: Offset(offset.dx * 40, 0), child: child),
       child: SizedBox(
         height: 88,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           itemCount: calendarDays.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 10),
           separatorBuilder: (_, _) => const SizedBox(width: 10),
           itemBuilder: (context, index) {
             final day = calendarDays[index];
@@ -745,6 +788,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ? [
                           BoxShadow(
                             color: _accent.withValues(alpha: 0.38),
+                            color: _accent.withValues(alpha: 0.38),
                             blurRadius: 16,
                             spreadRadius: 1,
                             offset: const Offset(0, 4),
@@ -754,6 +798,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                           BoxShadow(
                             color: Colors.black
                                 .withValues(alpha: isDarkMode ? 0.25 : 0.05),
+                            color: Colors.black.withValues(
+                              alpha: isDarkMode ? 0.25 : 0.05,
+                            ),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
@@ -767,9 +814,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: selected
-                            ? Colors.white70
-                            : _textSecondary,
+                        color: selected ? Colors.white70 : _textSecondary,
                       ),
                     ),
                     const SizedBox(height: 7),
@@ -826,6 +871,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   blurRadius: 4,
                 ),
               ],
+            : [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 4)],
       ),
     );
   }
@@ -889,8 +935,10 @@ class _DashboardScreenState extends State<DashboardScreen>
               builder: (context, progress, _) {
                 return LayoutBuilder(
                   builder: (context, constraints) {
-                    final size =
-                        Size(constraints.maxWidth, constraints.maxHeight);
+                    final size = Size(
+                      constraints.maxWidth,
+                      constraints.maxHeight,
+                    );
                     return GestureDetector(
                       onPanDown: (details) =>
                           _updateTouch(details.localPosition, size, series),
@@ -965,7 +1013,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       tween: Tween<double>(begin: 0, end: 1),
       builder: (context, t, child) => Opacity(
         opacity: t,
-        child: Transform.translate(offset: Offset(0, (1 - t) * 8), child: child),
+        child: Transform.translate(
+          offset: Offset(0, (1 - t) * 8),
+          child: child,
+        ),
       ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -973,9 +1024,14 @@ class _DashboardScreenState extends State<DashboardScreen>
           color: isDarkMode
               ? Colors.white.withValues(alpha: 0.06)
               : (isUp ? _accent.withValues(alpha: 0.08) : _downColor.withValues(alpha: 0.08)),
+              ? Colors.white.withValues(alpha: 0.06)
+              : (isUp
+                    ? _accent.withValues(alpha: 0.08)
+                    : _downColor.withValues(alpha: 0.08)),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
+              color: Colors.black.withValues(alpha: isDarkMode ? 0.2 : 0.04),
               color: Colors.black.withValues(alpha: isDarkMode ? 0.2 : 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
@@ -1123,8 +1179,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
             ),
-            Icon(Icons.keyboard_arrow_down_rounded,
-                size: 16, color: _textSecondary),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: _textSecondary,
+            ),
           ],
         ),
       ),
@@ -1138,7 +1197,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget _buildWorkoutCard() {
     final session = sessionsByDay[selectedDayIndex]!;
     final isToday = selectedDayIndex == todayIndex;
-    final incomplete = isToday &&
+    final incomplete =
+        isToday &&
         !session.isRestDay &&
         workoutRunState != WorkoutRunState.completed;
 
@@ -1151,6 +1211,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.05),
             color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.05),
             blurRadius: 14,
             offset: const Offset(0, 5),
@@ -1219,7 +1280,9 @@ class _DashboardScreenState extends State<DashboardScreen>
               style: TextStyle(fontSize: 13.5, color: _textSecondary),
             ),
 
-          if (!session.isToday && !session.isRestDay && !session.isFutureDay) ...[
+          if (!session.isToday &&
+              !session.isRestDay &&
+              !session.isFutureDay) ...[
             const SizedBox(height: 16),
             Row(
               children: [
@@ -1422,11 +1485,14 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value,
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: _textPrimary)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: _textPrimary,
+            ),
+          ),
           const SizedBox(height: 2),
           Text(label, style: TextStyle(fontSize: 11, color: _textSecondary)),
         ],
@@ -1458,6 +1524,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -1472,8 +1539,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                     color: _accent,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.fitness_center_rounded,
-                      color: Colors.white, size: 18),
+                  child: const Icon(
+                    Icons.fitness_center_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1506,12 +1576,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                             begin: 0,
                             end: completedExerciseCount / totalExercisesToday,
                           ),
-                          builder: (context, value, _) => LinearProgressIndicator(
-                            value: value,
-                            minHeight: 5,
-                            backgroundColor: Colors.white24,
-                            valueColor: AlwaysStoppedAnimation(_accent),
-                          ),
+                          builder: (context, value, _) =>
+                              LinearProgressIndicator(
+                                value: value,
+                                minHeight: 5,
+                                backgroundColor: Colors.white24,
+                                valueColor: AlwaysStoppedAnimation(_accent),
+                              ),
                         ),
                       ),
                     ],
@@ -1530,8 +1601,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                     ),
                     const SizedBox(width: 2),
-                    Icon(Icons.arrow_forward_rounded,
-                        size: 16, color: _accent),
+                    Icon(Icons.arrow_forward_rounded, size: 16, color: _accent),
                   ],
                 ),
               ],
@@ -1558,9 +1628,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                 height: 34,
                 decoration: BoxDecoration(
                   color: _accent.withValues(alpha: 0.12),
+                  color: _accent.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(Icons.auto_awesome_rounded, color: _accent, size: 18),
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  color: _accent,
+                  size: 18,
+                ),
               ),
               const SizedBox(width: 10),
               Text(
@@ -1653,6 +1728,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.04),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1666,10 +1742,16 @@ class _DashboardScreenState extends State<DashboardScreen>
             height: 30,
             decoration: BoxDecoration(
               color: (stat.isPositive ? _accent : _downColor).withValues(alpha: 0.12),
+              color: (stat.isPositive ? _accent : _downColor).withValues(
+                alpha: 0.12,
+              ),
               borderRadius: BorderRadius.circular(9),
             ),
-            child: Icon(stat.icon,
-                size: 16, color: stat.isPositive ? _accent : _downColor),
+            child: Icon(
+              stat.icon,
+              size: 16,
+              color: stat.isPositive ? _accent : _downColor,
+            ),
           ),
           const SizedBox(height: 12),
           _CountUpText(
@@ -1703,6 +1785,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -1726,12 +1809,38 @@ class _DashboardScreenState extends State<DashboardScreen>
                     
                   },
                 
+              onTap: () {
+  if (index == 1) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const NutritionScreen(),
+      ),
+    );
+    return;
+  }
+
+  if (index == 3) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const FriendsScreen(),
+      ),
+    );
+    return;
+  }
+
+  setState(() => navIndex = index);
+},
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 8),
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: selected
+                      ? _accent.withValues(alpha: 0.12)
                       ? _accent.withValues(alpha: 0.12)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
@@ -1783,6 +1892,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.05),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.05),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -1799,9 +1909,8 @@ Offset _computePoint(int index, Size size, List<double> values) {
   final range = (maxVal - minVal) == 0 ? 1 : (maxVal - minVal);
   final dx = size.width / (values.length - 1);
   final normalized = (values[index] - minVal) / range;
-  final y = size.height -
-      (normalized * size.height * 0.75) -
-      size.height * 0.12;
+  final y =
+      size.height - (normalized * size.height * 0.75) - size.height * 0.12;
   return Offset(dx * index, y);
 }
 
@@ -1874,6 +1983,8 @@ class _SplinePainter extends CustomPainter {
           colors: [
             lineColor.withValues(alpha: 0.22),
             lineColor.withValues(alpha: 0.0),
+            lineColor.withValues(alpha: 0.22),
+            lineColor.withValues(alpha: 0.0),
           ],
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
@@ -1894,6 +2005,11 @@ class _SplinePainter extends CustomPainter {
         touchedIndex! < points.length) {
       final p = points[touchedIndex!];
       canvas.drawCircle(p, 8, Paint()..color = lineColor.withValues(alpha: 0.2));
+      canvas.drawCircle(
+        p,
+        8,
+        Paint()..color = lineColor.withValues(alpha: 0.2),
+      );
       canvas.drawCircle(p, 4.5, Paint()..color = lineColor);
       canvas.drawCircle(
         p,
@@ -1940,10 +2056,10 @@ class _PulseBadgeState extends State<_PulseBadge>
     duration: const Duration(milliseconds: 1200),
   );
 
-  late final Animation<double> _scale =
-      Tween<double>(begin: 0.97, end: 1.05).animate(
-    CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-  );
+  late final Animation<double> _scale = Tween<double>(
+    begin: 0.97,
+    end: 1.05,
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
   @override
   void initState() {
@@ -1977,6 +2093,7 @@ class _PulseBadgeState extends State<_PulseBadge>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
+          color: widget.color.withValues(alpha: 0.12),
           color: widget.color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(20),
         ),
