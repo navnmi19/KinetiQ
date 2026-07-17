@@ -1,5 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:gym_app/themes/theme_controller.dart';
+import'package:gym_app/screens/progress/progress_screen.dart';
+import'package:gym_app/screens/social/friends_screen.dart';
 
 /// -----------------------------------------------------------------------
 /// PLACEHOLDER DATA MODELS
@@ -86,14 +89,22 @@ class NutritionScreen extends StatefulWidget {
 
 class _NutritionScreenState extends State<NutritionScreen>
     with TickerProviderStateMixin {
-  // ---- palette (fixed dark premium theme — Apple Fitness x WHOOP) ----
-  static const Color _bg = Color(0xFF0B0B0D);
-  static const Color _cardColor = Color(0xFF1A1A1D);
-  static const Color _accent = Color(0xFFFF7A1A);
-  static const Color _textPrimary = Colors.white;
-  static const Color _textSecondary = Colors.white60;
-  static const Color _divider = Colors.white12;
-  static const Color _downColor = Color(0xFFEF5350);
+  // ---- palette (reuses global ThemeController — same source Dashboard uses) ----
+  bool get isDarkMode => ThemeController.mode.value == ThemeMode.dark;
+
+  Color get _bg => isDarkMode ? const Color(0xFF0B0B0D) : Colors.white;
+  Color get _cardColor =>
+      isDarkMode ? const Color(0xFF1A1A1D) : Colors.white;
+  Color get _accent =>
+      isDarkMode ? const Color(0xFFFF7A1A) : const Color(0xFF22C55E);
+  Color get _textPrimary =>
+      isDarkMode ? Colors.white : const Color(0xFF15181D);
+  Color get _textSecondary =>
+      isDarkMode ? Colors.white60 : const Color(0xFF6B7280);
+  Color get _divider =>
+      isDarkMode ? Colors.white12 : const Color(0xFFEFEFEF);
+  Color get _downColor =>
+      isDarkMode ? const Color(0xFFEF5350) : const Color(0xFFE53935);
 
   // ---- placeholder user info ----------------------------------------
   final String userName = "user"; // TODO: replace with real user name
@@ -220,6 +231,7 @@ class _NutritionScreenState extends State<NutritionScreen>
   @override
   void initState() {
     super.initState();
+    ThemeController.mode.addListener(_onThemeChanged);
     filledGlasses = List.generate(totalGlasses, (i) => i < 6);
     _entryController = AnimationController(
       vsync: this,
@@ -231,8 +243,11 @@ class _NutritionScreenState extends State<NutritionScreen>
     );
   }
 
+  void _onThemeChanged() => setState(() {});
+
   @override
   void dispose() {
+    ThemeController.mode.removeListener(_onThemeChanged);
     _entryController.dispose();
     super.dispose();
   }
@@ -267,6 +282,11 @@ class _NutritionScreenState extends State<NutritionScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bg,
+      appBar: AppBar(
+        backgroundColor: _bg,
+        elevation: 0,
+        iconTheme: IconThemeData(color: _accent),
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -347,7 +367,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             children: [
               Text(
                 _greetingWord,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.1,
@@ -357,7 +377,7 @@ class _NutritionScreenState extends State<NutritionScreen>
               const SizedBox(height: 6),
               Text(
                 "Hey, $userName 👋",
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 27,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.4,
@@ -368,7 +388,7 @@ class _NutritionScreenState extends State<NutritionScreen>
               const SizedBox(height: 8),
               Text(
                 _motivationalLine,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w500,
                   height: 1.3,
@@ -393,7 +413,7 @@ class _NutritionScreenState extends State<NutritionScreen>
               ),
             ],
           ),
-          child: const Icon(
+          child: Icon(
             Icons.notifications_none_rounded,
             color: _accent,
             size: 17,
@@ -427,7 +447,7 @@ class _NutritionScreenState extends State<NutritionScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 "Nutrition",
                 style: TextStyle(
                   fontSize: 24,
@@ -439,7 +459,7 @@ class _NutritionScreenState extends State<NutritionScreen>
               const SizedBox(height: 4),
               Text(
                 dateLabel,
-                style: const TextStyle(fontSize: 13, color: _textSecondary),
+                style: TextStyle(fontSize: 13, color: _textSecondary),
               ),
             ],
           ),
@@ -452,9 +472,9 @@ class _NutritionScreenState extends State<NutritionScreen>
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: const [
+            children: [
               Icon(Icons.calendar_today_rounded, size: 13, color: _accent),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
                 "Today",
                 style: TextStyle(
@@ -481,7 +501,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   "Calories",
                   style: TextStyle(
@@ -501,7 +521,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                   color: _accent.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
+                child: Text(
                   "Goal 2,400",
                   style: TextStyle(
                     fontSize: 11.5,
@@ -541,7 +561,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                           children: [
                             Text(
                               "${(calorieGoal * value).round()}",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: -0.5,
@@ -549,7 +569,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                               ),
                             ),
                             const SizedBox(height: 2),
-                            const Text(
+                            Text(
                               "kcal eaten",
                               style: TextStyle(
                                 fontSize: 11.5,
@@ -626,7 +646,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             children: [
               Text(
                 label,
-                style: const TextStyle(fontSize: 11, color: _textSecondary),
+                style: TextStyle(fontSize: 11, color: _textSecondary),
               ),
               const SizedBox(height: 2),
               Text(
@@ -682,7 +702,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         children: [
           Text(
             macro.label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w600,
               color: _textSecondary,
@@ -697,7 +717,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                 children: [
                   TextSpan(
                     text: "${macro.currentGrams.round()}",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.3,
@@ -706,7 +726,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                   ),
                   TextSpan(
                     text: "/${macro.targetGrams.round()}g",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: _textSecondary,
@@ -747,7 +767,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   "Water Intake",
                   style: TextStyle(
@@ -760,7 +780,7 @@ class _NutritionScreenState extends State<NutritionScreen>
               ),
               Text(
                 "${_litersFilled.toStringAsFixed(2)}L / ${_litersGoal.toStringAsFixed(1)}L",
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
                   color: _accent,
@@ -811,7 +831,7 @@ class _NutritionScreenState extends State<NutritionScreen>
           const SizedBox(height: 12),
           Text(
             "$_glassesFilled of $totalGlasses glasses • tap to log a glass",
-            style: const TextStyle(fontSize: 11.5, color: _textSecondary),
+            style: TextStyle(fontSize: 11.5, color: _textSecondary),
           ),
         ],
       ),
@@ -864,14 +884,14 @@ class _NutritionScreenState extends State<NutritionScreen>
                   color: _accent.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.auto_awesome_rounded,
                   color: _accent,
                   size: 18,
                 ),
               ),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
                   "AI Nutrition Snapshot",
                   style: TextStyle(
@@ -914,7 +934,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                   Expanded(
                     child: Text(
                       item.label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600,
                         color: _textPrimary,
@@ -935,7 +955,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                     child: Text(
                       item.context,
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         color: _textSecondary,
                       ),
@@ -958,7 +978,7 @@ class _NutritionScreenState extends State<NutritionScreen>
     final logged = meals.where((m) => m.status == MealStatus.logged).length;
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
             "Today's Meals",
             style: TextStyle(
@@ -971,7 +991,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         ),
         Text(
           "$logged/${meals.length} logged",
-          style: const TextStyle(fontSize: 12.5, color: _textSecondary),
+          style: TextStyle(fontSize: 12.5, color: _textSecondary),
         ),
       ],
     );
@@ -1028,7 +1048,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                       child: Text(
                         meal.name,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w700,
                           color: _textPrimary,
@@ -1049,7 +1069,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                 const SizedBox(height: 3),
                 Text(
                   "${meal.tag} • ${meal.time}",
-                  style: const TextStyle(fontSize: 12, color: _textSecondary),
+                  style: TextStyle(fontSize: 12, color: _textSecondary),
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -1061,7 +1081,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                     _macroChip("F", meal.fat, const Color(0xFFAB47BC)),
                     const Spacer(),
                     if (isUpcoming)
-                      const Text(
+                      Text(
                         "Upcoming",
                         style: TextStyle(
                           fontSize: 11,
@@ -1070,7 +1090,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                         ),
                       )
                     else
-                      const Icon(
+                      Icon(
                         Icons.check_circle_rounded,
                         size: 16,
                         color: _accent,
@@ -1188,7 +1208,31 @@ class _NutritionScreenState extends State<NutritionScreen>
             final item = navItems[index];
 
             return GestureDetector(
-              onTap: () => setState(() => navIndex = index),
+              onTap: () {
+if (index == navIndex) return;
+
+                if (index == 0) {
+                 Navigator.pop(context);
+                 return;
+                }
+                if (index == 2) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProgressScreen()),
+                  );
+                  return;
+                }
+
+                if (index == 3) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const FriendsScreen()),
+                  );
+                  return;
+                }
+
+                setState(() => navIndex = index);
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 padding: const EdgeInsets.symmetric(
@@ -1215,7 +1259,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                               padding: const EdgeInsets.only(left: 6),
                               child: Text(
                                 item.label,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: _accent,
