@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:gym_app/models/friend_model.dart';
 import 'search_people_screen.dart';
 import 'friend_requests_screen.dart';
 import 'friend_profile_screen.dart';
+import 'my_friends_screen.dart';
+import 'friends_controller.dart';
+import '../../themes/theme_controller.dart';
 import '../nutrition/nutrition_screen.dart';
 import '../progress/progress_screen.dart';
 
@@ -13,8 +17,6 @@ class FriendsScreen extends StatefulWidget {
 }
 
 class _FriendsScreenState extends State<FriendsScreen> {
-  final Color green = const Color(0xFF22C55E);
-
   // ---- bottom nav -----------------------------------------------
   int navIndex = 3; // Friends tab active
   final List<_NavItem> navItems = const [
@@ -24,250 +26,284 @@ class _FriendsScreenState extends State<FriendsScreen> {
     _NavItem(icon: Icons.person_rounded, label: "Friends"),
   ];
 
-  final List<Map<String, dynamic>> suggested = [
-    {
-      "name": "Sophia",
-      "goal": "5 Day Streak",
-      "color": Colors.green,
-      "icon": Icons.directions_run_rounded,
-    },
-    {
-      "name": "Daniel",
-      "goal": "Strength",
-      "color": Colors.blue,
-      "icon": Icons.fitness_center,
-    },
-    {
-      "name": "Emma",
-      "goal": "Yoga",
-      "color": Colors.orange,
-      "icon": Icons.self_improvement,
-    },
-    {
-      "name": "James",
-      "goal": "Cycling",
-      "color": Colors.purple,
-      "icon": Icons.directions_bike,
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFFD1FAE5),
-              Colors.white,
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 6),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.mode,
+      builder: (context, mode, _) {
+        final isDark = mode == ThemeMode.dark;
+        final bgTop = isDark ? Colors.black : const Color(0xFFD1FAE5);
+        final bgBottom = isDark ? const Color(0xFF0B0B0D) : Colors.white;
+        final card = isDark ? const Color(0xFF1A1A1D) : Colors.white;
+        final accent =
+            isDark ? const Color(0xFFFF7A1A) : const Color(0xFF22C55E);
+        final textPrimary = isDark ? Colors.white : Colors.black87;
+        final textSecondary =
+            isDark ? Colors.white70 : Colors.grey.shade700;
+        final chipInactive = isDark ? Colors.white24 : Colors.grey.shade300;
+        final chipInactiveText =
+            isDark ? Colors.white70 : Colors.grey.shade700;
 
-                      Text(
-                        "Friends",
-                        style: TextStyle(
-                          fontSize: width < 360 ? 30 : 36,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black87,
-                        ),
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      Text(
-                        "Stay connected with your fitness partners.",
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade700,
-                          height: 1.4,
-                        ),
-                      ),
-
-                      const SizedBox(height: 28),
-
-                      _ActionCard(
-                        icon: Icons.person_search_rounded,
-                        title: "Find Friends",
-                        subtitle: "Discover new workout partners nearby.",
-                        color: green,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const SearchPeopleScreen()),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      _ActionCard(
-                        icon: Icons.groups_rounded,
-                        title: "My Friends",
-                        subtitle: "View your fitness circle and activity.",
-                        color: green,
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      _ActionCard(
-                        icon: Icons.mark_email_unread_rounded,
-                        title: "Friend Requests",
-                        subtitle: "2 pending requests waiting for you.",
-                        color: green,
-                        badge: "2",
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const FriendRequestsScreen()),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      Row(
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [bgTop, bgBottom],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 6),
+
                           Text(
-                            "Suggested Friends",
+                            "Friends",
                             style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 20,
-                              color: Colors.grey.shade900,
+                              fontSize: width < 360 ? 30 : 36,
+                              fontWeight: FontWeight.w800,
+                              color: textPrimary,
                             ),
                           ),
-                        ],
-                      ),
 
-                      const SizedBox(height: 18),
+                          const SizedBox(height: 6),
 
-                      SizedBox(
-                        height: 210,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: suggested.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 16),
-                          itemBuilder: (_, index) {
-                            final item = suggested[index];
+                          Text(
+                            "Stay connected with your fitness partners.",
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: textSecondary,
+                              height: 1.4,
+                            ),
+                          ),
 
-                            return GestureDetector(
+                          const SizedBox(height: 28),
+
+                          _ActionCard(
+                            icon: Icons.person_search_rounded,
+                            title: "Find Friends",
+                            subtitle: "Discover new workout partners nearby.",
+                            accent: accent,
+                            cardColor: card,
+                            textPrimary: textPrimary,
+                            textSecondary: textSecondary,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const SearchPeopleScreen()),
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          _ActionCard(
+                            icon: Icons.groups_rounded,
+                            title: "My Friends",
+                            subtitle: "View your fitness circle and activity.",
+                            accent: accent,
+                            cardColor: card,
+                            textPrimary: textPrimary,
+                            textSecondary: textSecondary,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const MyFriendsScreen()),
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          ValueListenableBuilder<List<Friend>>(
+                            valueListenable: FriendsController.friends,
+                            builder: (context, _, _) {
+                              final pendingCount =
+                                  FriendsController.pendingIncoming.length;
+                              return _ActionCard(
+                                icon: Icons.mark_email_unread_rounded,
+                                title: "Friend Requests",
+                                subtitle: pendingCount > 0
+                                    ? "$pendingCount pending requests waiting for you."
+                                    : "No pending requests.",
+                                accent: accent,
+                                cardColor: card,
+                                textPrimary: textPrimary,
+                                textSecondary: textSecondary,
+                                badge: pendingCount > 0 ? "$pendingCount" : null,
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (_) => const FriendProfileScreen()),
+                                    MaterialPageRoute(builder: (_) => const FriendRequestsScreen()),
                                   );
                                 },
-                                child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 350),
-                              curve: Curves.easeInOut,
-                              width: 170,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(.05),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(18),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 34,
-                                      backgroundColor:
-                                      (item["color"] as Color).withOpacity(.15),
-                                      child: Icon(
-                                        item["icon"],
-                                        color: item["color"],
-                                        size: 34,
-                                      ),
-                                    ),
+                              );
+                            },
+                          ),
 
-                                    Column(
-                                      children: [
-                                        Text(
-                                          item["name"],
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 17,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          item["goal"],
-                                          style: TextStyle(
-                                            color: Colors.grey.shade600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                          const SizedBox(height: 32),
 
-                                    InkWell(
-                                      borderRadius: BorderRadius.circular(14),
-                                      onTap: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text("Friend request sent to ${item["name"]}!")),
-                                        );
-                                      },
-                                      child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 350),
-                                      curve: Curves.easeInOut,
-                                      height: 42,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: green,
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
-                                      child: const Center(
-                                        child: Text(
-                                          "Add",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ),
-                                    ))
-                                  ],
+                          Row(
+                            children: [
+                              Text(
+                                "Suggested Friends",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 20,
+                                  color: textPrimary,
                                 ),
                               ),
-                            ));
-                          },
-                        ),
-                      ),
+                            ],
+                          ),
 
-                      const SizedBox(height: 30),
-                    ],
+                          const SizedBox(height: 18),
+
+                          SizedBox(
+                            height: 210,
+                            child: ValueListenableBuilder<List<Friend>>(
+                              valueListenable: FriendsController.friends,
+                              builder: (context, _, _) {
+                                final suggested = FriendsController.discoverable;
+
+                                return ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const BouncingScrollPhysics(),
+                                  itemCount: suggested.length,
+                                  separatorBuilder: (_, _) => const SizedBox(width: 16),
+                                  itemBuilder: (_, index) {
+                                    final item = suggested[index];
+                                    final requested =
+                                        item.status == FriendStatus.pendingOutgoing;
+
+                                    return GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  FriendProfileScreen(friend: item),
+                                            ),
+                                          );
+                                        },
+                                        child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 350),
+                                      curve: Curves.easeInOut,
+                                      width: 170,
+                                      decoration: BoxDecoration(
+                                        color: card,
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                                            blurRadius: 20,
+                                            offset: const Offset(0, 8),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(18),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 34,
+                                              backgroundColor:
+                                                  item.color.withValues(alpha: .15),
+                                              child: Icon(
+                                                item.icon,
+                                                color: item.color,
+                                                size: 34,
+                                              ),
+                                            ),
+
+                                            Column(
+                                              children: [
+                                                Text(
+                                                  item.name,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 17,
+                                                    color: textPrimary,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 6),
+                                                Text(
+                                                  item.activityTag,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    color: textSecondary,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+
+                                            InkWell(
+                                              borderRadius: BorderRadius.circular(14),
+                                              onTap: requested
+                                                  ? null
+                                                  : () => FriendsController
+                                                      .sendRequest(item.id),
+                                              child: AnimatedContainer(
+                                              duration: const Duration(milliseconds: 350),
+                                              curve: Curves.easeInOut,
+                                              height: 42,
+                                              width: double.infinity,
+                                              decoration: BoxDecoration(
+                                                color: requested
+                                                    ? chipInactive
+                                                    : accent,
+                                                borderRadius: BorderRadius.circular(14),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  requested ? "Requested" : "Add",
+                                                  style: TextStyle(
+                                                    color: requested
+                                                        ? chipInactiveText
+                                                        : Colors.white,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                              ),
+                                            ))
+                                          ],
+                                        ),
+                                      ),
+                                    ));
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+
+                          const SizedBox(height: 30),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  _buildBottomNav(card, accent, textSecondary, isDark),
+                ],
               ),
-              _buildBottomNav(),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -275,14 +311,19 @@ class _FriendsScreenState extends State<FriendsScreen> {
   // BOTTOM NAVIGATION
   // -------------------------------------------------------------
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav(
+    Color card,
+    Color accent,
+    Color textSecondary,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: card,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -301,12 +342,12 @@ class _FriendsScreenState extends State<FriendsScreen> {
                 if (index == navIndex) return;
 
                 if (index == 0) {
-                  Navigator.pop(context);
+                  Navigator.popUntil(context, (route) => route.isFirst);
                   return;
                 }
 
                 if (index == 1) {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (_) => const NutritionScreen()),
                   );
@@ -314,7 +355,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                 }
 
                 if (index == 2) {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (_) => const ProgressScreen()),
                   );
@@ -330,7 +371,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: selected ? green.withOpacity(0.12) : Colors.transparent,
+                  color: selected ? accent.withValues(alpha: 0.12) : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -338,7 +379,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                     Icon(
                       item.icon,
                       size: 22,
-                      color: selected ? green : Colors.grey.shade600,
+                      color: selected ? accent : textSecondary,
                     ),
                     AnimatedSize(
                       duration: const Duration(milliseconds: 200),
@@ -350,7 +391,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: green,
+                                  color: accent,
                                 ),
                               ),
                             )
@@ -377,7 +418,10 @@ class _ActionCard extends StatefulWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Color color;
+  final Color accent;
+  final Color cardColor;
+  final Color textPrimary;
+  final Color textSecondary;
   final String? badge;
   final VoidCallback? onTap;
 
@@ -385,7 +429,10 @@ class _ActionCard extends StatefulWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.color,
+    required this.accent,
+    required this.cardColor,
+    required this.textPrimary,
+    required this.textSecondary,
     this.badge,
     this.onTap,
   });
@@ -413,11 +460,11 @@ class _ActionCardState extends State<_ActionCard> {
           curve: Curves.easeInOut,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: widget.cardColor,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(.05),
+                color: Colors.black.withValues(alpha: .05),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -430,12 +477,12 @@ class _ActionCardState extends State<_ActionCard> {
                 height: 58,
                 width: 58,
                 decoration: BoxDecoration(
-                  color: widget.color.withOpacity(.12),
+                  color: widget.accent.withValues(alpha: .12),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   widget.icon,
-                  color: widget.color,
+                  color: widget.accent,
                   size: 30,
                 ),
               ),
@@ -450,16 +497,17 @@ class _ActionCardState extends State<_ActionCard> {
                       widget.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
+                        color: widget.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       widget.subtitle,
                       style: TextStyle(
-                        color: Colors.grey.shade600,
+                        color: widget.textSecondary,
                         height: 1.35,
                       ),
                     ),
@@ -477,7 +525,7 @@ class _ActionCardState extends State<_ActionCard> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: widget.color,
+                    color: widget.accent,
                     borderRadius: BorderRadius.circular(50),
                   ),
                   child: Text(
@@ -492,7 +540,7 @@ class _ActionCardState extends State<_ActionCard> {
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 18,
-                  color: Colors.grey.shade400,
+                  color: widget.textSecondary,
                 ),
             ],
           ),

@@ -1209,14 +1209,14 @@ class _NutritionScreenState extends State<NutritionScreen>
 
             return GestureDetector(
               onTap: () {
-if (index == navIndex) return;
+                if (index == navIndex) return;
 
                 if (index == 0) {
-                 Navigator.pop(context);
-                 return;
+                  Navigator.popUntil(context, (route) => route.isFirst);
+                  return;
                 }
                 if (index == 2) {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (_) => const ProgressScreen()),
                   );
@@ -1224,7 +1224,7 @@ if (index == navIndex) return;
                 }
 
                 if (index == 3) {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (_) => const FriendsScreen()),
                   );

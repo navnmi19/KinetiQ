@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../themes/theme_controller.dart';
+import '../nutrition/nutrition_screen.dart';
+import '../social/friends_screen.dart';
 
 
 class ProgressScreen extends StatelessWidget {
@@ -295,9 +297,8 @@ class _QuestCard extends StatelessWidget {
 
 /// Bottom nav bar for the Progress screen — visually matches Dashboard's
 /// nav bar. "Progress" is shown pre-selected since that's this screen.
-/// Tapping "Home" pops back to Dashboard (this screen was pushed on top
-/// of it). Nutrition/Profile are inert for now, same as on Dashboard,
-/// until those screens exist.
+/// Tapping "Home" pops back to Dashboard; Nutrition/Friends replace this
+/// screen in place, matching the other screens' bottom nav behavior.
 class _ProgressBottomNav extends StatelessWidget {
   final _ProgressColors colors;
   const _ProgressBottomNav({required this.colors});
@@ -306,7 +307,7 @@ class _ProgressBottomNav extends StatelessWidget {
     (icon: Icons.home_rounded, label: 'Home'),
     (icon: Icons.restaurant_menu_rounded, label: 'Nutrition'),
     (icon: Icons.show_chart_rounded, label: 'Progress'),
-    (icon: Icons.person_rounded, label: 'Profile'),
+    (icon: Icons.person_rounded, label: 'Friends'),
   ];
 
   static const int _progressIndex = 2;
@@ -337,10 +338,23 @@ class _ProgressBottomNav extends StatelessWidget {
               onTap: () {
                 if (selected) return; // already here, no-op
                 if (index == 0) {
-                  Navigator.pop(context); // back to Dashboard
+                  Navigator.popUntil(context, (route) => route.isFirst);
+                  return;
                 }
-                // Nutrition/Profile: no-op until those screens exist,
-                // same placeholder behavior as Dashboard's nav for now.
+                if (index == 1) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NutritionScreen()),
+                  );
+                  return;
+                }
+                if (index == 3) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const FriendsScreen()),
+                  );
+                  return;
+                }
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),

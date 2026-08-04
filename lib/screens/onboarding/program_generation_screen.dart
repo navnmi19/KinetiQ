@@ -40,15 +40,9 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
   bool _loadingComplete = false;
   bool _showWelcomeSequence = false;
 
-  String _firstLineText = '';
-  String _secondLineText = '';
-  bool _firstLineDone = false;
-  
-
   static const String _firstLineFull = 'Welcome to Workout.';
   static const String _secondLineFull = 'Your journey starts today.';
 
-  Timer? _typewriterTimer;
   Timer? _navigationTimer;
 
   @override
@@ -111,43 +105,6 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
       setState(() {
         _showWelcomeSequence = true;
       });
-      _typeFirstLine();
-    });
-  }
-
-  void _typeFirstLine() {
-    int index = 0;
-    _typewriterTimer = Timer.periodic(const Duration(milliseconds: 90), (timer) {
-      if (index < _firstLineFull.length) {
-        setState(() {
-          _firstLineText = _firstLineFull.substring(0, index + 1);
-        });
-        index++;
-      } else {
-        timer.cancel();
-        setState(() {
-          _firstLineDone = true;
-        });
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (!mounted) return;
-          _typeSecondLine();
-        });
-      }
-    });
-  }
-
-  void _typeSecondLine() {
-    int index = 0;
-    _typewriterTimer = Timer.periodic(const Duration(milliseconds: 60), (timer) {
-      if (index < _secondLineFull.length) {
-        setState(() {
-          _secondLineText = _secondLineFull.substring(0, index + 1);
-        });
-        index++;
-      } else {
-        timer.cancel();
-        _scheduleNavigation();
-      }
     });
   }
 
@@ -173,7 +130,6 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
     _progressController.dispose();
     _glowController.dispose();
     _messageTimer?.cancel();
-    _typewriterTimer?.cancel();
     _navigationTimer?.cancel();
     super.dispose();
   }
@@ -328,9 +284,9 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
       key: const ValueKey('welcome'),
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          _firstLineText,
-          textAlign: TextAlign.center,
+        _StaggeredText(
+          key: const ValueKey('welcome_line1'),
+          text: _firstLineFull,
           style: const TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w800,
@@ -339,19 +295,19 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
           ),
         ),
         const SizedBox(height: 12),
-        AnimatedOpacity(
-          duration: const Duration(milliseconds: 300),
-          opacity: _firstLineDone ? 1.0 : 0.0,
-          child: Text(
-            _secondLineText,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade700,
-              height: 1.4,
-            ),
+        _StaggeredText(
+          key: const ValueKey('welcome_line2'),
+          text: _secondLineFull,
+          startDelay:
+              _StaggeredText.estimateDuration(_firstLineFull) +
+              const Duration(milliseconds: 200),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade700,
+            height: 1.4,
           ),
+          onCompleted: _scheduleNavigation,
         ),
       ],
     );
@@ -394,6 +350,105 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Reveals [text] one character at a time, each letter fading in with a
+/// slight upward drift. Cadence between letters roughly matches natural
+/// typing speed (a touch faster) -- the difference from a plain typewriter
+/// is that each letter eases in smoothly instead of popping in instantly.
+class _StaggeredText extends StatefulWidget {
+  static const int _staggerMs = 75;
+  static const int _letterRevealMs = 200;
+
+  final String text;
+  final TextStyle style;
+  final Duration startDelay;
+  final VoidCallback? onCompleted;
+
+  const _StaggeredText({
+    super.key,
+    required this.text,
+    required this.style,
+    this.startDelay = Duration.zero,
+    this.onCompleted,
+  });
+
+  static Duration estimateDuration(String text) {
+    return Duration(
+      milliseconds: text.length * _staggerMs + _letterRevealMs,
+    );
+  }
+
+  @override
+  State<_StaggeredText> createState() => _StaggeredTextState();
+}
+
+class _StaggeredTextState extends State<_StaggeredText>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  Timer? _startTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: _StaggeredText.estimateDuration(widget.text),
+    );
+    if (widget.onCompleted != null) {
+      _controller.addStatusListener((status) {
+        if (status == AnimationStatus.completed) widget.onCompleted!();
+      });
+    }
+    _startTimer = Timer(widget.startDelay, () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _startTimer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final totalMs = _controller.duration!.inMilliseconds;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        return Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: List.generate(widget.text.length, (i) {
+            final startFraction =
+                (i * _StaggeredText._staggerMs) / totalMs;
+            final endFraction =
+                (i * _StaggeredText._staggerMs + _StaggeredText._letterRevealMs) /
+                totalMs;
+            final progress = CurvedAnimation(
+              parent: _controller,
+              curve: Interval(
+                startFraction.clamp(0.0, 1.0),
+                endFraction.clamp(0.0, 1.0),
+                curve: Curves.easeOut,
+              ),
+            ).value;
+
+            return Opacity(
+              opacity: progress,
+              child: Transform.translate(
+                offset: Offset(0, (1 - progress) * 8),
+                child: Text(widget.text[i], style: widget.style),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 }
