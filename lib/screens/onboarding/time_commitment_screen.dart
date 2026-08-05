@@ -174,6 +174,15 @@ class _TimeCommitmentScreenState
                   : const Color(0xFFE5E7EB),
               width: selected ? 2 : 1,
             ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF22C55E).withValues(alpha: 0.25),
+                      blurRadius: 16,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : const [],
           ),
           child: FittedBox(
             fit: BoxFit.scaleDown,

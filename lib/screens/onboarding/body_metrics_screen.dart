@@ -186,32 +186,66 @@ class _BodyMetricsScreenState extends State<BodyMetricsScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton(
-                          onPressed: _switchToMetric,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                isMetric ? const Color(0xFF22C55E) : Colors.white,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: isMetric
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF22C55E)
+                                          .withValues(alpha: 0.25),
+                                      blurRadius: 16,
+                                      spreadRadius: 1,
+                                    ),
+                                  ]
+                                : const [],
                           ),
-                          child: Text(
-                            "Metric",
-                            style: TextStyle(
-                              color: isMetric ? Colors.white : Colors.black,
+                          child: ElevatedButton(
+                            onPressed: _switchToMetric,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  isMetric ? const Color(0xFF22C55E) : Colors.white,
+                            ),
+                            child: Text(
+                              "Metric",
+                              style: TextStyle(
+                                color: isMetric ? Colors.white : Colors.black,
+                              ),
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: ElevatedButton(
-                          onPressed: _switchToUS,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                !isMetric ? const Color(0xFF22C55E) : Colors.white,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: !isMetric
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF22C55E)
+                                          .withValues(alpha: 0.25),
+                                      blurRadius: 16,
+                                      spreadRadius: 1,
+                                    ),
+                                  ]
+                                : const [],
                           ),
-                          child: Text(
-                            "US",
-                            style: TextStyle(
-                              color: !isMetric ? Colors.white : Colors.black,
+                          child: ElevatedButton(
+                            onPressed: _switchToUS,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  !isMetric ? const Color(0xFF22C55E) : Colors.white,
+                            ),
+                            child: Text(
+                              "US",
+                              style: TextStyle(
+                                color: !isMetric ? Colors.white : Colors.black,
+                              ),
                             ),
                           ),
                         ),
@@ -937,6 +971,7 @@ class _RulerTick extends StatelessWidget {
           if (isMajor)
             Positioned(
               bottom: 18 + tickHeight + 6,
+              width: _RulerPickerState.itemExtent,
               child: _AnimatedRulerLabel(
                 label: label,
                 distanceMajor: distanceMajor,

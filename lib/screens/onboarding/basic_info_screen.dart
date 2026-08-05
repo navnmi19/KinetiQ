@@ -23,7 +23,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
   static const int maxAge = 100;
 
   bool isNameFocused = false;
-  bool get isFormValid => nameController.text.trim().isNotEmpty;
+  String? gender;
+  bool get isFormValid =>
+      nameController.text.trim().isNotEmpty && gender != null;
 
   @override
   void initState() {
@@ -209,6 +211,12 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
 
           const SizedBox(height: 26),
 
+          _fieldLabel(Icons.wc_outlined, "Gender"),
+          const SizedBox(height: 10),
+          _buildGenderSelector(),
+
+          const SizedBox(height: 26),
+
           _fieldLabel(Icons.calendar_today_outlined, "Your Age"),
           const SizedBox(height: 10),
           _buildAgeSelector(),
@@ -285,6 +293,73 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(color: green, width: 1.5),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGenderSelector() {
+    const options = [
+      {'label': 'Male', 'icon': Icons.male},
+      {'label': 'Female', 'icon': Icons.female},
+      {'label': 'Other', 'icon': Icons.transgender},
+    ];
+
+    return Row(
+      children: [
+        for (final option in options) ...[
+          Expanded(
+            child: _genderOption(
+              label: option['label'] as String,
+              icon: option['icon'] as IconData,
+            ),
+          ),
+          if (option != options.last) const SizedBox(width: 10),
+        ],
+      ],
+    );
+  }
+
+  Widget _genderOption({required String label, required IconData icon}) {
+    final bool selected = gender == label;
+
+    return GestureDetector(
+      onTap: () => setState(() => gender = label),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: mint25.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? green : Colors.transparent,
+            width: 1.5,
+          ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: green.withValues(alpha: 0.25),
+                    blurRadius: 16,
+                    spreadRadius: 1,
+                  )
+                ]
+              : [],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: selected ? green : Colors.black38, size: 22),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: selected ? darkText : Colors.black45,
+              ),
+            ),
+          ],
         ),
       ),
     );

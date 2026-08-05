@@ -104,7 +104,9 @@ class _FitnessGoalScreenState extends State<FitnessGoalScreen> {
                             primaryGoal = goal["title"];
                           });
                         },
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
                           margin:
                               const EdgeInsets.only(bottom: 15),
                           padding:
@@ -115,6 +117,16 @@ class _FitnessGoalScreenState extends State<FitnessGoalScreen> {
                                 : Colors.white,
                             borderRadius:
                                 BorderRadius.circular(20),
+                            boxShadow: selected
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF22C55E)
+                                          .withValues(alpha: 0.25),
+                                      blurRadius: 16,
+                                      spreadRadius: 1,
+                                    ),
+                                  ]
+                                : const [],
                           ),
                           child: Row(
                             children: [
