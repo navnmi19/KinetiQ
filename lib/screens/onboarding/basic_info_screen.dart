@@ -24,8 +24,17 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
 
   bool isNameFocused = false;
   String? gender;
+
+  String? get ageError {
+    if (age < minAge) return "Age must be at least $minAge";
+    if (age > maxAge) return "Age must be at most $maxAge";
+    return null;
+  }
+
   bool get isFormValid =>
-      nameController.text.trim().isNotEmpty && gender != null;
+      nameController.text.trim().isNotEmpty &&
+      gender != null &&
+      ageError == null;
 
   @override
   void initState() {
@@ -41,14 +50,6 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     nameController.dispose();
     nameFocusNode.dispose();
     super.dispose();
-  }
-
-  void _incrementAge() {
-    if (age < maxAge) setState(() => age++);
-  }
-
-  void _decrementAge() {
-    if (age > minAge) setState(() => age--);
   }
 
   void _onContinue() {
@@ -221,9 +222,12 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
           const SizedBox(height: 10),
           _buildAgeSelector(),
           const SizedBox(height: 10),
-          const Text(
-            "We use this to personalize your experience",
-            style: TextStyle(fontSize: 13, color: Colors.black45),
+          Text(
+            ageError ?? "We use this to personalize your experience",
+            style: TextStyle(
+              fontSize: 13,
+              color: ageError != null ? Colors.red : Colors.black45,
+            ),
           ),
 
           const SizedBox(height: 32),
@@ -367,7 +371,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
 
   Widget _buildAgeSelector() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       decoration: BoxDecoration(
         color: mint25.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
@@ -375,57 +379,86 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _ageStepButton(icon: Icons.remove, onTap: _decrementAge, enabled: age > minAge),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            transitionBuilder: (child, animation) {
-              return ScaleTransition(
-                scale: animation,
-                child: FadeTransition(opacity: animation, child: child),
-              );
-            },
+          _ageStepButton(Icons.remove_rounded, () => _changeAge(-1)),
+          GestureDetector(
+            onTap: _editAge,
             child: Text(
               "$age",
-              key: ValueKey<int>(age),
               style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
+                fontSize: 30,
+                fontWeight: FontWeight.w800,
                 color: darkText,
               ),
             ),
           ),
-          _ageStepButton(icon: Icons.add, onTap: _incrementAge, enabled: age < maxAge),
+          _ageStepButton(Icons.add_rounded, () => _changeAge(1)),
         ],
       ),
     );
   }
 
-  Widget _ageStepButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required bool enabled,
-  }) {
+  Widget _ageStepButton(IconData icon, VoidCallback onTap) {
     return GestureDetector(
-      onTap: enabled ? onTap : null,
-      child: AnimatedScale(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        scale: enabled ? 1.0 : 0.92,
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 200),
-          opacity: enabled ? 1.0 : 0.4,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
-            child: Icon(icon, color: green, size: 22),
-          ),
+          ],
         ),
+        child: Icon(icon, color: green, size: 20),
       ),
     );
+  }
+
+  void _changeAge(int delta) {
+    setState(() => age = (age + delta).clamp(1, 130));
+  }
+
+  Future<void> _editAge() async {
+    final controller = TextEditingController(text: "$age");
+    final result = await showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          "Enter your age",
+          style: TextStyle(color: darkText, fontWeight: FontWeight.bold),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          keyboardType: TextInputType.number,
+          style: const TextStyle(fontSize: 20, color: darkText),
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.pop(context, int.tryParse(controller.text.trim())),
+            child: const Text(
+              "Done",
+              style: TextStyle(color: green, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (result != null) setState(() => age = result);
   }
 
   Widget _buildContinueButton() {

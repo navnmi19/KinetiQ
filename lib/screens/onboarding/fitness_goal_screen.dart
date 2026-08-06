@@ -181,25 +181,33 @@ class _FitnessGoalScreenState extends State<FitnessGoalScreen> {
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
-                    onPressed: () {Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const TargetBodyPartsScreen(),
-    ),
-  );},
+                    onPressed: primaryGoal == null
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const TargetBodyPartsScreen(),
+                              ),
+                            );
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
                           const Color(0xFF22C55E),
+                      disabledBackgroundColor: Colors.grey.shade300,
                       shape: RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.circular(20),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Continue",
                       style: TextStyle(
                         fontSize: 20,
-                        color: Colors.white,
+                        color: primaryGoal == null
+                            ? Colors.grey.shade500
+                            : Colors.white,
                       ),
                     ),
                   ),

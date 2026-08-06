@@ -1,24 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:gym_app/screens/data/sample_workout.dart';
 import 'package:gym_app/screens/workout/workout_flow_controller.dart';
+import 'package:gym_app/state/active_workout_controller.dart';
 import 'package:gym_app/themes/theme_controller.dart';
-import '../social/friends_screen.dart';
+import 'package:gym_app/themes/theme_toggle_button.dart';
+import '../profile/profile_screen.dart';
 import '../nutrition/nutrition_screen.dart';
 import 'package:gym_app/screens/progress/progress_screen.dart';
+import 'package:gym_app/screens/progress/graphs_screen.dart';
+import 'package:gym_app/widgets/step_ring_painter.dart';
+import 'activity_detail_screen.dart';
 
 enum DayStatus { completed, rest, missed, upcoming }
 
 class CalendarDay {
-  final int dayNumber;
-  final String weekday;
+  final DateTime date;
   final DayStatus status;
 
-  const CalendarDay({
-    required this.dayNumber,
-    required this.weekday,
-    required this.status,
-  });
+  const CalendarDay({required this.date, required this.status});
+
+  int get dayNumber => date.day;
 }
+
+const List<String> _weekdayShortNames = [
+  "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
+];
+const List<String> _monthShortNames = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+String _formatFullDate(DateTime d) =>
+    "${_weekdayShortNames[d.weekday - 1]}, ${_monthShortNames[d.month - 1]} ${d.day}";
 
 class WorkoutExercise {
   final String name;
@@ -125,23 +138,47 @@ class _DashboardScreenState extends State<DashboardScreen>
   final String userName = "user"; // TODO: replace with real user name
 
   // ---- calendar --------------------------------------------------
-  final List<CalendarDay> calendarDays = const [
-    CalendarDay(dayNumber: 5, weekday: "Mon", status: DayStatus.completed),
-    CalendarDay(dayNumber: 6, weekday: "Tue", status: DayStatus.completed),
-    CalendarDay(dayNumber: 7, weekday: "Wed", status: DayStatus.rest),
-    CalendarDay(dayNumber: 8, weekday: "Thu", status: DayStatus.missed),
-    CalendarDay(dayNumber: 9, weekday: "Fri", status: DayStatus.completed),
-    CalendarDay(dayNumber: 10, weekday: "Sat", status: DayStatus.completed),
-    CalendarDay(dayNumber: 11, weekday: "Sun", status: DayStatus.upcoming),
-  ];
+  // Placeholder "date joined" — once there's a real backend this becomes
+  // the user's actual account-creation/first-login date.
+  static final DateTime _joinDate = DateTime.now().subtract(
+    const Duration(days: 60),
+  );
 
-  // index 5 (Sat) is treated as "today" for this placeholder
-  static const int todayIndex = 5;
-  int selectedDayIndex = todayIndex;
+  static DateTime get _today {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  DayStatus _placeholderStatusFor(DateTime date) {
+    if (date.weekday == DateTime.wednesday) return DayStatus.rest;
+    if (date.day % 7 == 0) return DayStatus.missed;
+    return DayStatus.completed;
+  }
+
+  late final List<CalendarDay> calendarDays = List.generate(
+    _today.difference(_joinDate).inDays + 1,
+    (i) {
+      final date = DateTime(
+        _joinDate.year,
+        _joinDate.month,
+        _joinDate.day,
+      ).add(Duration(days: i));
+      return CalendarDay(date: date, status: _placeholderStatusFor(date));
+    },
+  );
+
+  // Last entry in the range is always "today".
+  late final int todayIndex = calendarDays.length - 1;
+  late int selectedDayIndex = todayIndex;
+
+  bool get _isPastDaySelected => selectedDayIndex != todayIndex;
 
   // ---- workout sessions per calendar day -----------------------------
-  late final Map<int, WorkoutSession> sessionsByDay = {
-    0: const WorkoutSession(
+  // Cyclic placeholder templates — reused across the whole join-to-today
+  // range so every day has plausible data without hand-authoring dozens
+  // of entries. "Today" always gets the richer, hand-authored entry below.
+  static const List<WorkoutSession> _sessionTemplates = [
+    WorkoutSession(
       title: "Pull Day",
       tags: "Back • Biceps",
       duration: "50 min",
@@ -155,7 +192,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         WorkoutExercise(name: "Barbell Row", setsReps: "3 × 10", done: true),
       ],
     ),
-    1: const WorkoutSession(
+    WorkoutSession(
       title: "Leg Day",
       tags: "Quads • Hamstrings • Glutes",
       duration: "55 min",
@@ -173,7 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
       ],
     ),
-    2: const WorkoutSession(
+    WorkoutSession(
       title: "Rest Day",
       tags: "Recovery",
       duration: "—",
@@ -181,7 +218,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       isRestDay: true,
       exercises: [],
     ),
-    3: const WorkoutSession(
+    WorkoutSession(
       title: "Push Day",
       tags: "Chest • Shoulders • Triceps",
       duration: "0 min",
@@ -197,7 +234,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
       ],
     ),
-    4: const WorkoutSession(
+    WorkoutSession(
       title: "Push Day",
       tags: "Chest • Shoulders • Triceps",
       duration: "56 min",
@@ -211,52 +248,46 @@ class _DashboardScreenState extends State<DashboardScreen>
         WorkoutExercise(name: "Shoulder Press", setsReps: "3 × 12", done: true),
       ],
     ),
-    5: const WorkoutSession(
-      title: "Push Day",
-      tags: "Chest • Shoulders • Triceps",
-      duration: "58 min",
-      statusLabel: "🔥 12-Day Streak",
-      isToday: true,
-      exercises: [
-        WorkoutExercise(
-          name: "Bench Press",
-          setsReps: "4 × 8",
-          done: true,
-          weight: "60 kg",
-          previousWeight: "55 kg",
-          change: "▲ +9%",
-        ),
-        WorkoutExercise(
-          name: "Incline Press",
-          setsReps: "3 × 10",
-          done: true,
-          weight: "40 kg",
-          previousWeight: "38 kg",
-          change: "▲ +5%",
-        ),
-        WorkoutExercise(
-          name: "Shoulder Press",
-          setsReps: "3 × 12",
-          done: true,
-          weight: "24 kg",
-          previousWeight: "24 kg",
-          change: "— 0%",
-        ),
-      ],
-    ),
-    6: const WorkoutSession(
-      title: "Pull Day",
-      tags: "Back • Biceps",
-      duration: "—",
-      statusLabel: "Recovery Day Recommended",
-      isFutureDay: true,
-      exercises: [
-        WorkoutExercise(name: "Deadlift", setsReps: "4 × 6", done: false),
-        WorkoutExercise(name: "Lat Pulldown", setsReps: "3 × 10", done: false),
-        WorkoutExercise(name: "Barbell Row", setsReps: "3 × 10", done: false),
-      ],
-    ),
-  };
+  ];
+
+  static const WorkoutSession _todaySession = WorkoutSession(
+    title: "Push Day",
+    tags: "Chest • Shoulders • Triceps",
+    duration: "58 min",
+    statusLabel: "🔥 12-Day Streak",
+    isToday: true,
+    exercises: [
+      WorkoutExercise(
+        name: "Bench Press",
+        setsReps: "4 × 8",
+        done: true,
+        weight: "60 kg",
+        previousWeight: "55 kg",
+        change: "▲ +9%",
+      ),
+      WorkoutExercise(
+        name: "Incline Press",
+        setsReps: "3 × 10",
+        done: true,
+        weight: "40 kg",
+        previousWeight: "38 kg",
+        change: "▲ +5%",
+      ),
+      WorkoutExercise(
+        name: "Shoulder Press",
+        setsReps: "3 × 12",
+        done: true,
+        weight: "24 kg",
+        previousWeight: "24 kg",
+        change: "— 0%",
+      ),
+    ],
+  );
+
+  WorkoutSession _sessionForIndex(int index) {
+    if (index == todayIndex) return _todaySession;
+    return _sessionTemplates[index % _sessionTemplates.length];
+  }
 
   // ---- graph state --------------------------------------------------
   final List<String> metrics = const [
@@ -378,48 +409,70 @@ class _DashboardScreenState extends State<DashboardScreen>
     _NavItem(icon: Icons.home_rounded, label: "Home"),
     _NavItem(icon: Icons.restaurant_menu_rounded, label: "Nutrition"),
     _NavItem(icon: Icons.show_chart_rounded, label: "Progress"),
-    _NavItem(icon: Icons.person_rounded, label: "Friends"),
+    _NavItem(icon: Icons.person_rounded, label: "Profile"),
   ];
 
   // ---- active workout tracking (today only) --------------------------
-  WorkoutRunState workoutRunState = WorkoutRunState.notStarted;
-  int completedExerciseCount = 0;
-  final int totalExercisesToday = 9;
+  // Whether a workout is in progress is derived from ActiveWorkoutController
+  // (see lib/state/active_workout_controller.dart) rather than tracked
+  // independently, so it stays true across leaving/resuming the workout
+  // flow. "Completed today" is the one bit that's genuinely dashboard-local
+  // (it's cosmetic, same-session only).
+  bool _workoutCompletedToday = false;
+
+  WorkoutRunState get workoutRunState {
+    if (ActiveWorkoutController.snapshot.value != null) {
+      return WorkoutRunState.inProgress;
+    }
+    if (_workoutCompletedToday) return WorkoutRunState.completed;
+    return WorkoutRunState.notStarted;
+  }
+
+  void _onActiveWorkoutChanged() => setState(() {});
 
   void _startWorkout() {
-    setState(() {
-      workoutRunState = WorkoutRunState.inProgress;
-      completedExerciseCount = 1;
-    });
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            WorkoutFlowController(initialSession: sampleWorkoutSession),
+        builder: (context) => WorkoutFlowController(
+          initialSession: sampleWorkoutSession,
+          onWorkoutFinished: _handleWorkoutFinished,
+        ),
       ),
     );
   }
 
-  void _advanceActiveWorkout() {
-    setState(() {
-      completedExerciseCount = (completedExerciseCount + 1).clamp(
-        0,
-        totalExercisesToday,
-      );
-      if (completedExerciseCount >= totalExercisesToday) {
-        workoutRunState = WorkoutRunState.completed;
-      }
-    });
+  void _resumeWorkout() {
+    final snapshot = ActiveWorkoutController.snapshot.value;
+    if (snapshot == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WorkoutFlowController(
+          initialSession: snapshot.session,
+          resumeSnapshot: snapshot,
+          onWorkoutFinished: _handleWorkoutFinished,
+        ),
+      ),
+    );
+  }
+
+  void _handleWorkoutFinished() {
+    setState(() => _workoutCompletedToday = true);
+    Navigator.of(context).maybePop();
   }
 
   // ---- entry animation --------------------------------------------
   late final AnimationController _entryController;
   late final Animation<double> _entryFade;
 
+  late final ScrollController _calendarScrollController;
+
   @override
   void initState() {
     super.initState();
     ThemeController.mode.addListener(_onThemeChanged);
+    ActiveWorkoutController.snapshot.addListener(_onActiveWorkoutChanged);
     _entryController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -428,6 +481,15 @@ class _DashboardScreenState extends State<DashboardScreen>
       parent: _entryController,
       curve: Curves.easeOut,
     );
+    _calendarScrollController = ScrollController();
+    // Today is always the last entry — land the strip there on open.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_calendarScrollController.hasClients) {
+        _calendarScrollController.jumpTo(
+          _calendarScrollController.position.maxScrollExtent,
+        );
+      }
+    });
   }
 
   void _onThemeChanged() => setState(() {});
@@ -435,7 +497,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void dispose() {
     ThemeController.mode.removeListener(_onThemeChanged);
+    ActiveWorkoutController.snapshot.removeListener(_onActiveWorkoutChanged);
     _entryController.dispose();
+    _calendarScrollController.dispose();
     super.dispose();
   }
 
@@ -481,9 +545,29 @@ class _DashboardScreenState extends State<DashboardScreen>
   double get _todayValue => _currentSeries.last;
   double get _yesterdayValue => _currentSeries[_currentSeries.length - 2];
 
+  /// Deterministic placeholder "comparison" series — distinct in shape
+  /// from the primary series so the two-line chart reads as real data,
+  /// not a mirrored duplicate. Represents "yesterday" when viewing today,
+  /// or the selected past day when browsing calendar history.
+  List<double> get _secondarySeries {
+    final factor = _isPastDaySelected
+        ? 0.82 + (selectedDayIndex % 5) * 0.035
+        : 0.9;
+    return _currentSeries.map((v) => v * factor).toList();
+  }
+
+  String get _comparisonLabel => _isPastDaySelected
+      ? _formatFullDate(calendarDays[selectedDayIndex].date)
+      : "Yesterday";
+
+  String get _primaryLabel => _isPastDaySelected ? "Present Day" : "Today";
+
+  double get _comparisonValue =>
+      _isPastDaySelected ? _secondarySeries.last : _yesterdayValue;
+
   double get _percentChange {
-    if (_yesterdayValue == 0) return 0;
-    return ((_todayValue - _yesterdayValue) / _yesterdayValue) * 100;
+    if (_comparisonValue == 0) return 0;
+    return ((_todayValue - _comparisonValue) / _comparisonValue) * 100;
   }
 
   static const Set<String> _decimalMetrics = {
@@ -506,7 +590,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   Color get _bgBottom => isDarkMode ? Colors.black : Colors.white;
   Color get _cardColor => isDarkMode ? const Color(0xFF1C1C1E) : Colors.white;
   Color get _workoutCardColor =>
-      isDarkMode ? const Color(0xFF1C1C1E) : const Color(0xFFE0EEFF);
+      isDarkMode ? const Color(0xFF14202E) : const Color(0xFFDDEBFC);
   Color get _accent =>
       isDarkMode ? const Color(0xFFFF7A1A) : const Color(0xFF22C55E);
   Color get _textPrimary => isDarkMode ? Colors.white : const Color(0xFF15181D);
@@ -534,44 +618,48 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: FadeTransition(
             opacity: _entryFade,
             child: Stack(
               children: [
-                Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: EdgeInsets.fromLTRB(
-                          22,
-                          18,
-                          22,
-                          showFloatingBar ? 96 : 18,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildHeader(),
-                            const SizedBox(height: 30),
-                            _buildCalendar(),
-                            const SizedBox(height: 26),
-                            _buildGraphCard(),
-                            const SizedBox(height: 20),
-                            _buildWorkoutCard(),
-                            const SizedBox(height: 20),
-                            _buildAIInsightCard(),
-                            const SizedBox(height: 20),
-                            _buildQuickStats(),
-                            const SizedBox(height: 8),
-                          ],
-                        ),
-                      ),
-                    ),
-                    _buildBottomNav(),
-                  ],
+                SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    0,
+                    18,
+                    0,
+                    showFloatingBar ? 172 : 112,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _padded(_buildHeader()),
+                      const SizedBox(height: 30),
+                      // Calendar spans full width, edge-to-edge — no
+                      // horizontal padding here (it manages its own).
+                      _buildCalendar(),
+                      const SizedBox(height: 22),
+                      _padded(_buildStepCounterCard()),
+                      const SizedBox(height: 20),
+                      _padded(_buildGraphCard()),
+                      const SizedBox(height: 20),
+                      _padded(_buildWorkoutCard()),
+                      const SizedBox(height: 20),
+                      _padded(_buildAIInsightCard()),
+                      const SizedBox(height: 20),
+                      _padded(_buildQuickStats()),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
                 ),
                 _buildFloatingWorkoutBar(showFloatingBar),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 16,
+                  child: SafeArea(top: false, child: _buildBottomNav()),
+                ),
               ],
             ),
           ),
@@ -631,93 +719,12 @@ class _DashboardScreenState extends State<DashboardScreen>
         const SizedBox(width: 14),
         Column(
           children: [
-            _buildThemeToggle(),
+            const ThemeToggleButton(),
             const SizedBox(height: 10),
             _buildTrophyButton(),
           ],
         ),
       ],
-    );
-  }
-
-  /// Small animated pill switch — replaces the old circular icon button.
-  Widget _buildThemeToggle() {
-    return GestureDetector(
-      onTap: () => ThemeController.toggle(),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeOut,
-        width: 60,
-        height: 32,
-        padding: const EdgeInsets.all(3),
-        decoration: BoxDecoration(
-          color: isDarkMode ? const Color(0xFF2A2A2D) : const Color(0xFFEFF6F0),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.06),
-
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            AnimatedAlign(
-              duration: const Duration(milliseconds: 320),
-              curve: Curves.easeOut,
-              alignment: isDarkMode
-                  ? Alignment.centerRight
-                  : Alignment.centerLeft,
-              child: Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: _accent,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: _accent.withValues(alpha: 0.4),
-                    
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  isDarkMode
-                      ? Icons.dark_mode_rounded
-                      : Icons.light_mode_rounded,
-                  size: 15,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Opacity(
-                      opacity: isDarkMode ? 1 : 0,
-                      child: const Text("☀️", style: TextStyle(fontSize: 11)),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 4),
-                    child: Opacity(
-                      opacity: isDarkMode ? 0 : 1,
-                      child: const Text("🌙", style: TextStyle(fontSize: 11)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -732,21 +739,21 @@ class _DashboardScreenState extends State<DashboardScreen>
         );
       },
       child: Container(
-        width: 32,
-        height: 32,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
           color: _cardColor,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
-            
+
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
           ],
         ),
-        child: Icon(Icons.emoji_events_rounded, color: _accent, size: 16),
+        child: Icon(Icons.emoji_events_rounded, color: _accent, size: 18),
       ),
     );
   }
@@ -756,83 +763,113 @@ class _DashboardScreenState extends State<DashboardScreen>
   // -------------------------------------------------------------
 
   Widget _buildCalendar() {
-    return TweenAnimationBuilder<Offset>(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOut,
-      tween: Tween(begin: const Offset(0.05, 0), end: Offset.zero),
-      builder: (context, offset, child) =>
-          Transform.translate(offset: Offset(offset.dx * 40, 0), child: child),
-      child: SizedBox(
-        height: 88,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          itemCount: calendarDays.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 10),
-        
-          itemBuilder: (context, index) {
-            final day = calendarDays[index];
-            final selected = index == selectedDayIndex;
-
-            return GestureDetector(
-              onTap: () => setState(() => selectedDayIndex = index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeOut,
-                width: selected ? 56 : 52,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: selected ? _accent : _cardColor,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: selected
-                      ? [
-                          BoxShadow(
-                            color: _accent.withValues(alpha: 0.38),
-                          
-                            blurRadius: 16,
-                            spreadRadius: 1,
-                            offset: const Offset(0, 4),
-                          ),
-                        ]
-                      : [
-                          BoxShadow(
-                            color: Colors.black
-                                .withValues(alpha: isDarkMode ? 0.25 : 0.05),
-                            
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      day.weekday,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: selected ? Colors.white70 : _textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 7),
-                    Text(
-                      "${day.dayNumber}",
-                      style: TextStyle(
-                        fontSize: selected ? 17 : 16,
-                        fontWeight: FontWeight.bold,
-                        color: selected ? Colors.white : _textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 7),
-                    _statusDot(day.status, selected),
-                  ],
-                ),
-              ),
-            );
-          },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 22),
+          child: Text(
+            _isPastDaySelected
+                ? _formatFullDate(calendarDays[selectedDayIndex].date)
+                : "Today · ${_formatFullDate(calendarDays[selectedDayIndex].date)}",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: _accent,
+            ),
+          ),
         ),
-      ),
+        const SizedBox(height: 10),
+        // Full-width edge-to-edge day strip, scrollable across the whole
+        // join-date-to-today range (see calendarDays).
+        TweenAnimationBuilder<Offset>(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOut,
+          tween: Tween(begin: const Offset(0.05, 0), end: Offset.zero),
+          builder: (context, offset, child) => Transform.translate(
+            offset: Offset(offset.dx * 40, 0),
+            child: child,
+          ),
+          child: SizedBox(
+            height: 88,
+            width: double.infinity,
+            child: ListView.builder(
+              controller: _calendarScrollController,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: calendarDays.length,
+              itemBuilder: (context, index) {
+                final day = calendarDays[index];
+                final selected = index == selectedDayIndex;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: GestureDetector(
+                    onTap: () => setState(() => selectedDayIndex = index),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 280),
+                      curve: Curves.easeOut,
+                      width: 52,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: selected ? _accent : _cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: selected
+                            ? [
+                                BoxShadow(
+                                  color: _accent.withValues(alpha: 0.38),
+                                  blurRadius: 16,
+                                  spreadRadius: 1,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withValues(
+                                    alpha: isDarkMode ? 0.25 : 0.05,
+                                  ),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _weekdayShortNames[day.date.weekday - 1],
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: selected
+                                  ? Colors.white70
+                                  : _textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            "${day.dayNumber}",
+                            style: TextStyle(
+                              fontSize: selected ? 16 : 15,
+                              fontWeight: FontWeight.bold,
+                              color: selected ? Colors.white : _textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          _statusDot(day.status, selected),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -880,6 +917,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildGraphCard() {
     final series = _currentSeries;
+    final secondary = _secondarySeries;
+    final valueLabels = series.map(_formatValue).toList();
     final isUp = _percentChange >= 0;
 
     return _cardShell(
@@ -899,16 +938,20 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                 ),
               ),
-              _pillDropdown(
-                value: selectedPeriod,
-                options: periods,
-                displayLabels: _periodDisplayLabels,
-                onChanged: (v) => setState(() {
-                  selectedPeriod = v;
-                  touchedIndex = null;
-                }),
-              ),
-              const SizedBox(width: 8),
+              // Week/Month only make sense when anchored to "today" — a
+              // single past day can only be compared day-wise.
+              if (!_isPastDaySelected) ...[
+                _pillDropdown(
+                  value: selectedPeriod,
+                  options: periods,
+                  displayLabels: _periodDisplayLabels,
+                  onChanged: (v) => setState(() {
+                    selectedPeriod = v;
+                    touchedIndex = null;
+                  }),
+                ),
+                const SizedBox(width: 8),
+              ],
               _pillDropdown(
                 value: selectedMetric,
                 options: metrics,
@@ -922,11 +965,25 @@ class _DashboardScreenState extends State<DashboardScreen>
           const SizedBox(height: 8),
           // Floating comparison pill — the hero call-out for the graph.
           _buildComparisonPill(isUp),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _LegendDash(color: _accent, dashed: false, label: _primaryLabel),
+              const SizedBox(width: 16),
+              _LegendDash(
+                color: _accent.withValues(alpha: 0.55),
+                dashed: true,
+                label: _comparisonLabel,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           SizedBox(
             height: 210,
             child: TweenAnimationBuilder<double>(
-              key: ValueKey("$selectedMetric-$selectedPeriod"),
+              key: ValueKey(
+                "$selectedMetric-$selectedPeriod-$selectedDayIndex",
+              ),
               duration: const Duration(milliseconds: 900),
               curve: Curves.easeOutCubic,
               tween: Tween<double>(begin: 0, end: 1),
@@ -949,6 +1006,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                             size: size,
                             painter: _SplinePainter(
                               values: series,
+                              secondaryValues: secondary,
+                              valueLabels: valueLabels,
                               progress: progress,
                               lineColor: _accent,
                               touchedIndex: touchedIndex,
@@ -985,17 +1044,49 @@ class _DashboardScreenState extends State<DashboardScreen>
             children: [
               Expanded(
                 child: _comparisonBlock(
-                  label: "Today",
+                  label: _primaryLabel,
                   value: _formatValue(_todayValue),
                 ),
               ),
               Expanded(
                 child: _comparisonBlock(
-                  label: "Yesterday",
-                  value: _formatValue(_yesterdayValue),
+                  label: _comparisonLabel,
+                  value: _formatValue(_comparisonValue),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: isUp
+                  ? _accent.withValues(alpha: 0.1)
+                  : _downColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    isUp
+                        ? "You're trending above $_comparisonLabel"
+                        : "You're trending below $_comparisonLabel",
+                    style: TextStyle(fontSize: 13, color: _textPrimary),
+                  ),
+                ),
+                Text(
+                  "${isUp ? '↑' : '↓'} ${_percentChange.abs().toStringAsFixed(1)}%",
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: isUp ? _accent : _downColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -1190,7 +1281,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   // -------------------------------------------------------------
 
   Widget _buildWorkoutCard() {
-    final session = sessionsByDay[selectedDayIndex]!;
+    final session = _sessionForIndex(selectedDayIndex);
     final isToday = selectedDayIndex == todayIndex;
     final incomplete =
         isToday &&
@@ -1365,15 +1456,15 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     switch (workoutRunState) {
       case WorkoutRunState.notStarted:
-        label = "Start Workout";
+        label = "START WORKOUT";
         onPressed = _startWorkout;
         break;
       case WorkoutRunState.inProgress:
-        label = "Resume Workout";
-        onPressed = () {};
+        label = "RESUME";
+        onPressed = _resumeWorkout;
         break;
       case WorkoutRunState.completed:
-        label = "View Workout Summary";
+        label = "VIEW SUMMARY";
         onPressed = () {};
         break;
     }
@@ -1396,6 +1487,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             color: Colors.white,
             fontWeight: FontWeight.w700,
             fontSize: 14,
+            letterSpacing: 0.4,
           ),
         ),
       ),
@@ -1500,17 +1592,24 @@ class _DashboardScreenState extends State<DashboardScreen>
   // -------------------------------------------------------------
 
   Widget _buildFloatingWorkoutBar(bool visible) {
+    final snapshot = ActiveWorkoutController.snapshot.value;
+    final totalExercises = snapshot?.session.exercises.length ?? 0;
+    final currentExerciseNumber = (snapshot?.exerciseIndex ?? 0) + 1;
+    final progress = totalExercises == 0
+        ? 0.0
+        : currentExerciseNumber / totalExercises;
+
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 320),
       curve: Curves.easeOut,
       left: 16,
       right: 16,
-      bottom: visible ? 84 : -100,
+      bottom: visible ? 92 : -100,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 250),
         opacity: visible ? 1 : 0,
         child: GestureDetector(
-          onTap: _advanceActiveWorkout,
+          onTap: _resumeWorkout,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -1555,7 +1654,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        "$completedExerciseCount / $totalExercisesToday Exercises",
+                        "$currentExerciseNumber / $totalExercises Exercises",
                         style: const TextStyle(
                           fontSize: 11,
                           color: Colors.white60,
@@ -1569,7 +1668,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           curve: Curves.easeOut,
                           tween: Tween<double>(
                             begin: 0,
-                            end: completedExerciseCount / totalExercisesToday,
+                            end: progress,
                           ),
                           builder: (context, value, _) =>
                               LinearProgressIndicator(
@@ -1612,24 +1711,28 @@ class _DashboardScreenState extends State<DashboardScreen>
   // -------------------------------------------------------------
 
   Widget _buildAIInsightCard() {
-    return _cardShell(
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const GraphsScreen()),
+      ),
+      child: _cardShell(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   color: _accent.withValues(alpha: 0.12),
-                  
                   borderRadius: BorderRadius.circular(11),
                 ),
                 child: Icon(
                   Icons.auto_awesome_rounded,
                   color: _accent,
-                  size: 18,
+                  size: 16,
                 ),
               ),
               const SizedBox(width: 10),
@@ -1685,6 +1788,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           }),
         ],
       ),
+      ),
     );
   }
 
@@ -1693,37 +1797,27 @@ class _DashboardScreenState extends State<DashboardScreen>
   // -------------------------------------------------------------
 
   Widget _buildQuickStats() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _quickStatTile(quickStats[0])),
-            const SizedBox(width: 12),
-            Expanded(child: _quickStatTile(quickStats[1])),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _quickStatTile(quickStats[2])),
-            const SizedBox(width: 12),
-            Expanded(child: _quickStatTile(quickStats[3])),
-          ],
-        ),
-      ],
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 14,
+      crossAxisSpacing: 14,
+      childAspectRatio: 1.5,
+      children: quickStats.map(_quickStatTile).toList(),
     );
   }
 
   Widget _quickStatTile(QuickStat stat) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: _cardColor,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.04),
-            
+
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1775,22 +1869,20 @@ class _DashboardScreenState extends State<DashboardScreen>
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
       decoration: BoxDecoration(
         color: _cardColor,
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
-          
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.4 : 0.1),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(navItems.length, (index) {
-            final selected = index == navIndex;
-            final item = navItems[index];
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(navItems.length, (index) {
+          final selected = index == navIndex;
+          final item = navItems[index];
 
             return GestureDetector(
       onTap: () {
@@ -1815,7 +1907,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 if (index == 3) {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const FriendsScreen()),
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   );
                   return;
                 }
@@ -1862,8 +1954,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
             );
-          }),
-        ),
+        }),
       ),
     );
   }
@@ -1882,13 +1973,114 @@ class _DashboardScreenState extends State<DashboardScreen>
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDarkMode ? 0.25 : 0.05),
-            
+
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
         ],
       ),
       child: child,
+    );
+  }
+
+  /// Horizontal page padding for every card except the full-width calendar.
+  Widget _padded(Widget child) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 22),
+      child: child,
+    );
+  }
+
+  // -------------------------------------------------------------
+  // STEP COUNTER
+  // -------------------------------------------------------------
+
+  // Placeholder movement data. Target modeled on Apple Fitness's Move
+  // ring — a personal calorie-burn goal the user sets, converted here to
+  // a placeholder step target. Real values arrive once there's a backend
+  // and device accelerometer to read from.
+  static const int _stepsCompleted = 6412;
+  static const int _stepTarget = 8000;
+  static const int _caloriesBurnedToday = 340;
+  static const int _calorieGoal = 500;
+
+  Widget _buildStepCounterCard() {
+    final progress = (_stepsCompleted / _stepTarget).clamp(0.0, 1.0);
+
+    return GestureDetector(
+      onTap: _openActivityDetail,
+      child: _cardShell(
+        child: Row(
+          children: [
+            SizedBox(
+              width: 46,
+              height: 46,
+              child: CustomPaint(
+                painter: StepRingPainter(
+                  progress: progress,
+                  ringColor: _accent,
+                  trackColor: _divider,
+                  strokeWidth: 6,
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Steps Today",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: _textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        "$_stepsCompleted",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: _textPrimary,
+                        ),
+                      ),
+                      Text(
+                        " / $_stepTarget",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: _textSecondary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openActivityDetail() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ActivityDetailScreen(
+          stepsCompleted: _stepsCompleted,
+          stepTarget: _stepTarget,
+          caloriesBurned: _caloriesBurnedToday,
+          calorieGoal: _calorieGoal,
+        ),
+      ),
     );
   }
 }
@@ -1909,42 +2101,61 @@ class _SplinePainter extends CustomPainter {
   final double progress;
   final Color lineColor;
   final int? touchedIndex;
+  final List<double>? secondaryValues;
+  final List<String>? valueLabels;
 
   _SplinePainter({
     required this.values,
     required this.progress,
     required this.lineColor,
     this.touchedIndex,
+    this.secondaryValues,
+    this.valueLabels,
   });
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (values.length < 2) return;
+  /// Both lines are plotted against a shared min/max so a two-line
+  /// comparison is honest (each series isn't independently rescaled).
+  Offset _sharedPoint(int i, Size size, List<double> vals, double minVal, double range) {
+    final dx = size.width / (vals.length - 1);
+    final normalized = (vals[i] - minVal) / range;
+    final y = size.height - (normalized * size.height * 0.75) - size.height * 0.12;
+    return Offset(dx * i, y);
+  }
 
-    final points = List.generate(
-      values.length,
-      (i) => _computePoint(i, size, values),
-    );
-
+  Path _buildSplinePath(List<Offset> points) {
     final path = Path()..moveTo(points.first.dx, points.first.dy);
-
     for (int i = 0; i < points.length - 1; i++) {
       final p0 = i == 0 ? points[i] : points[i - 1];
       final p1 = points[i];
       final p2 = points[i + 1];
       final p3 = (i + 2 < points.length) ? points[i + 2] : p2;
-
-      final cp1 = Offset(
-        p1.dx + (p2.dx - p0.dx) / 6,
-        p1.dy + (p2.dy - p0.dy) / 6,
-      );
-      final cp2 = Offset(
-        p2.dx - (p3.dx - p1.dx) / 6,
-        p2.dy - (p3.dy - p1.dy) / 6,
-      );
-
+      final cp1 = Offset(p1.dx + (p2.dx - p0.dx) / 6, p1.dy + (p2.dy - p0.dy) / 6);
+      final cp2 = Offset(p2.dx - (p3.dx - p1.dx) / 6, p2.dy - (p3.dy - p1.dy) / 6);
       path.cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, p2.dx, p2.dy);
     }
+    return path;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.length < 2) return;
+
+    final hasSecondary =
+        secondaryValues != null && secondaryValues!.length == values.length;
+    final allValues = [
+      ...values,
+      if (hasSecondary) ...secondaryValues!,
+    ];
+    final maxVal = allValues.reduce((a, b) => a > b ? a : b);
+    final minVal = allValues.reduce((a, b) => a < b ? a : b);
+    final range = (maxVal - minVal) == 0 ? 1.0 : (maxVal - minVal);
+
+    final points = List.generate(
+      values.length,
+      (i) => _sharedPoint(i, size, values, minVal, range),
+    );
+
+    final path = _buildSplinePath(points);
 
     final revealPath = Path();
     for (final metric in path.computeMetrics()) {
@@ -1990,6 +2201,39 @@ class _SplinePainter extends CustomPainter {
 
     canvas.drawPath(revealPath, linePaint);
 
+    // Secondary comparison line — dashed, drawn on the same shared scale
+    // as the primary line so the two are honestly comparable.
+    if (hasSecondary) {
+      final secondaryPoints = List.generate(
+        secondaryValues!.length,
+        (i) => _sharedPoint(i, size, secondaryValues!, minVal, range),
+      );
+      final secondaryPath = _buildSplinePath(secondaryPoints);
+      final secondaryRevealPath = Path();
+      for (final metric in secondaryPath.computeMetrics()) {
+        secondaryRevealPath.addPath(
+          metric.extractPath(0, metric.length * progress),
+          Offset.zero,
+        );
+      }
+      final dashPaint = Paint()
+        ..color = lineColor.withValues(alpha: 0.55)
+        ..strokeWidth = 2.5
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round;
+      for (final metric in secondaryRevealPath.computeMetrics()) {
+        double distance = 0;
+        while (distance < metric.length) {
+          final next = distance + 5;
+          canvas.drawPath(
+            metric.extractPath(distance, next.clamp(0, metric.length)),
+            dashPaint,
+          );
+          distance = next + 6;
+        }
+      }
+    }
+
     if (touchedIndex != null &&
         touchedIndex! >= 0 &&
         touchedIndex! < points.length) {
@@ -2010,6 +2254,29 @@ class _SplinePainter extends CustomPainter {
           ..strokeWidth = 1.5,
       );
     }
+
+    // On-chart value labels — drawn once the reveal animation has mostly
+    // finished, so numbers don't pop in mid-draw.
+    if (valueLabels != null && progress > 0.85) {
+      for (int i = 0; i < points.length && i < valueLabels!.length; i++) {
+        final tp = TextPainter(
+          text: TextSpan(
+            text: valueLabels![i],
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              color: lineColor,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        final labelOffset = Offset(
+          (points[i].dx - tp.width / 2).clamp(0.0, size.width - tp.width),
+          (points[i].dy - tp.height - 8).clamp(0.0, size.height - tp.height),
+        );
+        tp.paint(canvas, labelOffset);
+      }
+    }
   }
 
   @override
@@ -2017,13 +2284,80 @@ class _SplinePainter extends CustomPainter {
     return oldDelegate.values != values ||
         oldDelegate.progress != progress ||
         oldDelegate.touchedIndex != touchedIndex ||
-        oldDelegate.lineColor != lineColor;
+        oldDelegate.lineColor != lineColor ||
+        oldDelegate.secondaryValues != secondaryValues ||
+        oldDelegate.valueLabels != valueLabels;
   }
 }
 
 /// Small pulsing badge used on the "today, not yet fully complete" state
 /// of the workout card. Kept isolated so the rest of the screen can stay
 /// implicit-animation only.
+/// Legend swatch for the graph's primary/comparison lines — a solid dash
+/// for the primary series, a dotted dash for the comparison series.
+class _LegendDash extends StatelessWidget {
+  final Color color;
+  final bool dashed;
+  final String label;
+
+  const _LegendDash({
+    required this.color,
+    required this.dashed,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: 16,
+          height: 3,
+          child: dashed
+              ? CustomPaint(painter: _DashPainter(color: color))
+              : DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
+}
+
+class _DashPainter extends CustomPainter {
+  final Color color;
+  const _DashPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2.4
+      ..strokeCap = StrokeCap.round;
+    double x = 0;
+    while (x < size.width) {
+      canvas.drawLine(
+        Offset(x, size.height / 2),
+        Offset(x + 3.5, size.height / 2),
+        paint,
+      );
+      x += 7;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashPainter oldDelegate) => false;
+}
+
 class _PulseBadge extends StatefulWidget {
   final Widget child;
   final Color color;

@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:gym_app/themes/theme_controller.dart';
 import'package:gym_app/screens/progress/progress_screen.dart';
-import'package:gym_app/screens/social/friends_screen.dart';
+import'package:gym_app/screens/profile/profile_screen.dart';
 
 /// -----------------------------------------------------------------------
 /// PLACEHOLDER DATA MODELS
@@ -218,7 +218,7 @@ class _NutritionScreenState extends State<NutritionScreen>
     _NavItem(icon: Icons.home_rounded, label: "Home"),
     _NavItem(icon: Icons.restaurant_menu_rounded, label: "Nutrition"),
     _NavItem(icon: Icons.show_chart_rounded, label: "Progress"),
-    _NavItem(icon: Icons.person_rounded, label: "Friends"),
+    _NavItem(icon: Icons.person_rounded, label: "Profile"),
   ];
 
   // ---- entry animation --------------------------------------------
@@ -1226,7 +1226,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                 if (index == 3) {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (_) => const FriendsScreen()),
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   );
                   return;
                 }

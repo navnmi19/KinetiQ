@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/exercise_model.dart';
+import '../../state/active_workout_controller.dart';
 import 'workout_overview_screen.dart';
 import 'exercise_screen.dart';
 import 'rest_screen.dart';
@@ -15,10 +16,16 @@ class WorkoutFlowController extends StatefulWidget {
   final WorkoutSession initialSession;
   final VoidCallback? onWorkoutFinished;
 
+  /// When resuming a workout left in progress on a previous visit (see
+  /// ActiveWorkoutController), skips straight past the overview screen
+  /// into the exercise the user was on.
+  final ActiveWorkoutSnapshot? resumeSnapshot;
+
   const WorkoutFlowController({
     super.key,
     required this.initialSession,
     this.onWorkoutFinished,
+    this.resumeSnapshot,
   });
 
   @override
@@ -26,11 +33,11 @@ class WorkoutFlowController extends StatefulWidget {
 }
 
 class _WorkoutFlowControllerState extends State<WorkoutFlowController> {
-  _WorkoutPhase _phase = _WorkoutPhase.overview;
+  late _WorkoutPhase _phase;
 
   late WorkoutSession _session;
-  int _exerciseIndex = 0;
-  int _currentSet = 1;
+  late int _exerciseIndex;
+  late int _currentSet;
 
   // What happens once the current rest period ends — computed the moment
   // "Move to Next Set" is pressed, then applied when rest finishes.
@@ -45,7 +52,34 @@ class _WorkoutFlowControllerState extends State<WorkoutFlowController> {
   @override
   void initState() {
     super.initState();
-    _session = widget.initialSession;
+    final resume = widget.resumeSnapshot;
+    if (resume != null) {
+      _session = resume.session;
+      _exerciseIndex = resume.exerciseIndex;
+      _currentSet = resume.currentSet;
+      _workoutStartTime = resume.startTime;
+      _caloriesBurned = resume.caloriesBurned;
+      _totalRestSeconds = resume.totalRestSeconds;
+      _phase = _WorkoutPhase.exercise;
+    } else {
+      _session = widget.initialSession;
+      _exerciseIndex = 0;
+      _currentSet = 1;
+      _phase = _WorkoutPhase.overview;
+    }
+  }
+
+  void _syncActiveWorkout() {
+    ActiveWorkoutController.update(
+      ActiveWorkoutSnapshot(
+        session: _session,
+        exerciseIndex: _exerciseIndex,
+        currentSet: _currentSet,
+        startTime: _workoutStartTime ?? DateTime.now(),
+        caloriesBurned: _caloriesBurned,
+        totalRestSeconds: _totalRestSeconds,
+      ),
+    );
   }
 
   Exercise get _currentExercise => _session.exercises[_exerciseIndex];
@@ -60,6 +94,7 @@ class _WorkoutFlowControllerState extends State<WorkoutFlowController> {
       _workoutStartTime = DateTime.now();
       _phase = _WorkoutPhase.exercise;
     });
+    _syncActiveWorkout();
   }
 
   /// Fires when "Move to Next Set" / "Finish Exercise" is pressed.
@@ -88,6 +123,24 @@ class _WorkoutFlowControllerState extends State<WorkoutFlowController> {
         _phase = _WorkoutPhase.rest;
       }
     });
+
+    if (_phase == _WorkoutPhase.complete) {
+      ActiveWorkoutController.clear();
+    } else {
+      // Persist the *post-rest* position (where the user will land once
+      // rest finishes) so resuming mid-rest skips straight to the next set
+      // rather than replaying the set they just completed.
+      ActiveWorkoutController.update(
+        ActiveWorkoutSnapshot(
+          session: _session,
+          exerciseIndex: _pendingExerciseIndex,
+          currentSet: _pendingSet,
+          startTime: _workoutStartTime ?? DateTime.now(),
+          caloriesBurned: _caloriesBurned,
+          totalRestSeconds: _totalRestSeconds,
+        ),
+      );
+    }
   }
 
   void _handleRestFinished(int actualRestSeconds) {
@@ -97,9 +150,11 @@ class _WorkoutFlowControllerState extends State<WorkoutFlowController> {
       _currentSet = _pendingSet;
       _phase = _WorkoutPhase.exercise;
     });
+    _syncActiveWorkout();
   }
 
   void _handleBackToDashboard() {
+    ActiveWorkoutController.clear();
     if (widget.onWorkoutFinished != null) {
       widget.onWorkoutFinished!();
     } else {

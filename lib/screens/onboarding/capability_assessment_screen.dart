@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import'training_setup_screen.dart';
 import'package:gym_app/widgets/background_decoration.dart';
+import 'package:gym_app/widgets/creative_value_picker.dart';
 class ExperienceScreen extends StatefulWidget {
   const ExperienceScreen({super.key});
 
@@ -104,60 +105,6 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
   // UI HELPERS (visual only — no state/logic changes below this point)
   // ---------------------------------------------------------------------
 
-  Widget buildChip(
-      String text,
-      String? selectedValue,
-      Function(String) onSelect) {
-
-    final bool selected = selectedValue == text;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          onSelect(text);
-          updateRecommendation();
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(
-            horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFF22C55E).withValues(alpha: 0.12)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: selected
-                ? const Color(0xFF22C55E)
-                : const Color(0xFFE5E7EB),
-            width: selected ? 2 : 1,
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF22C55E).withValues(alpha: 0.25),
-                    blurRadius: 16,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : const [],
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight:
-                selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected
-                ? const Color(0xFF16803C)
-                : Colors.black87,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildSectionHeader(String title, String subtitle) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,6 +126,73 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFamiliaritySelector() {
+    return Column(
+      children: familiarityOptions.map((option) {
+        final selected = familiarity == option;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: GestureDetector(
+            onTap: () => setState(() {
+              familiarity = option;
+              updateRecommendation();
+            }),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: selected
+                      ? const Color(0xFF22C55E)
+                      : Colors.transparent,
+                  width: 1.5,
+                ),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.25),
+                          blurRadius: 16,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : const [],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      option,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: selected
+                            ? const Color(0xFF22C55E)
+                            : Colors.black87,
+                      ),
+                    ),
+                  ),
+                  if (selected)
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: Color(0xFF22C55E),
+                      size: 20,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -385,15 +399,19 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
 
                         const SizedBox(height: 12),
 
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: pushupOptions
-                              .map((option) => buildChip(
-                                  option,
-                                  pushups,
-                                  (v) => pushups = v))
-                              .toList(),
+                        CreativeValuePicker(
+                          options: pushupOptions,
+                          selectedIndex: pushups == null
+                              ? null
+                              : pushupOptions.indexOf(pushups!),
+                          onChanged: (index) => setState(() {
+                            pushups = pushupOptions[index];
+                            updateRecommendation();
+                          }),
+                          accent: const Color(0xFF22C55E),
+                          textColor: Colors.black87,
+                          mutedColor: Colors.black54,
+                          chipBackground: Colors.white,
                         ),
 
                         const SizedBox(height: 24),
@@ -405,15 +423,19 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
 
                         const SizedBox(height: 12),
 
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: squatOptions
-                              .map((option) => buildChip(
-                                  option,
-                                  squats,
-                                  (v) => squats = v))
-                              .toList(),
+                        CreativeValuePicker(
+                          options: squatOptions,
+                          selectedIndex: squats == null
+                              ? null
+                              : squatOptions.indexOf(squats!),
+                          onChanged: (index) => setState(() {
+                            squats = squatOptions[index];
+                            updateRecommendation();
+                          }),
+                          accent: const Color(0xFF22C55E),
+                          textColor: Colors.black87,
+                          mutedColor: Colors.black54,
+                          chipBackground: Colors.white,
                         ),
 
                         const SizedBox(height: 24),
@@ -425,15 +447,19 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
 
                         const SizedBox(height: 12),
 
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: pullupOptions
-                              .map((option) => buildChip(
-                                  option,
-                                  pullups,
-                                  (v) => pullups = v))
-                              .toList(),
+                        CreativeValuePicker(
+                          options: pullupOptions,
+                          selectedIndex: pullups == null
+                              ? null
+                              : pullupOptions.indexOf(pullups!),
+                          onChanged: (index) => setState(() {
+                            pullups = pullupOptions[index];
+                            updateRecommendation();
+                          }),
+                          accent: const Color(0xFF22C55E),
+                          textColor: Colors.black87,
+                          mutedColor: Colors.black54,
+                          chipBackground: Colors.white,
                         ),
 
                         const SizedBox(height: 24),
@@ -445,16 +471,7 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
 
                         const SizedBox(height: 12),
 
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: familiarityOptions
-                              .map((option) => buildChip(
-                                  option,
-                                  familiarity,
-                                  (v) => familiarity = v))
-                              .toList(),
-                        ),
+                        _buildFamiliaritySelector(),
 
                         const SizedBox(height: 12),
                       ],
@@ -469,37 +486,54 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const TrainingSetupScreen(),
-                        ),
-                      );
-                    },
+                    onPressed: (pushups == null ||
+                            squats == null ||
+                            pullups == null ||
+                            familiarity == null)
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const TrainingSetupScreen(),
+                              ),
+                            );
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF22C55E),
+                      disabledBackgroundColor: Colors.grey.shade300,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(22),
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text(
-                          "Continue",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward,
-                            color: Colors.white, size: 20),
-                      ],
+                    child: Builder(
+                      builder: (context) {
+                        final complete = pushups != null &&
+                            squats != null &&
+                            pullups != null &&
+                            familiarity != null;
+                        final color = complete
+                            ? Colors.white
+                            : Colors.grey.shade500;
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Continue",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: color,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.arrow_forward,
+                                color: color, size: 20),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),

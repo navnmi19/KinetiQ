@@ -79,6 +79,16 @@ class _SplashScreenState extends State<SplashScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Text(
+                      "WELCOME TO",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: darkText.withValues(alpha: 0.5),
+                        letterSpacing: 3,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
@@ -115,12 +125,33 @@ class _SplashScreenState extends State<SplashScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 40),
                     Lottie.asset(
                       'assets/animations/pushup.lottie',
                       width: 150,
                       height: 150,
                       repeat: true,
+                    ),
+                    const SizedBox(height: 40),
+                    SizedBox(
+                      width: 120,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(99),
+                        child: LinearProgressIndicator(
+                          minHeight: 4,
+                          backgroundColor: green.withValues(alpha: 0.15),
+                          valueColor: const AlwaysStoppedAnimation(green),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      "Preparing your experience...",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: darkText.withValues(alpha: 0.5),
+                      ),
                     ),
                   ],
                 ),

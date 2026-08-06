@@ -376,28 +376,33 @@ SizedBox(
   width: double.infinity,
   height: 60,
   child: ElevatedButton(
-    onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              const TimeCommitmentScreen(),
-        ),
-      );
-    },
+    onPressed: selectedParts.isEmpty
+        ? null
+        : () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    const TimeCommitmentScreen(),
+              ),
+            );
+          },
 
     style: ElevatedButton.styleFrom(
       backgroundColor: const Color(0xFF22C55E),
+      disabledBackgroundColor: Colors.grey.shade300,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
     ),
 
-    child: const Text(
+    child: Text(
       "Continue",
       style: TextStyle(
         fontSize: 22,
-        color: Colors.white,
+        color: selectedParts.isEmpty
+            ? Colors.grey.shade500
+            : Colors.white,
       ),
     ),
   ),

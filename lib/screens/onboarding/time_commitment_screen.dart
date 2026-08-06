@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'capability_assessment_screen.dart';
 import'package:gym_app/widgets/background_decoration.dart';
+import 'package:gym_app/widgets/creative_value_picker.dart';
 
 class TimeCommitmentScreen extends StatefulWidget {
   const TimeCommitmentScreen({super.key});
@@ -149,59 +150,6 @@ class _TimeCommitmentScreenState
   // ---------------------------------------------------------------------
   // UI HELPERS (visual only — no state/logic changes below this point)
   // ---------------------------------------------------------------------
-
-  Widget _buildOptionChip({
-    required String label,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          height: 56,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: selected
-                ? const Color(0xFF22C55E).withValues(alpha: 0.12)
-                : Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: selected
-                  ? const Color(0xFF22C55E)
-                  : const Color(0xFFE5E7EB),
-              width: selected ? 2 : 1,
-            ),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF22C55E).withValues(alpha: 0.25),
-                      blurRadius: 16,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : const [],
-          ),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight:
-                    selected ? FontWeight.w700 : FontWeight.w500,
-                color: selected
-                    ? const Color(0xFF16803C)
-                    : Colors.black87,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildSectionHeader(String title, String subtitle) {
     return Column(
@@ -401,22 +349,21 @@ class _TimeCommitmentScreenState
 
                         const SizedBox(height: 14),
 
-                        Row(
-                          children: daysOptions.map((days) {
-                            final bool selected =
-                                selectedDays == days;
-
-                            return _buildOptionChip(
-                              label: "$days",
-                              selected: selected,
-                              onTap: () {
-                                setState(() {
-                                  selectedDays = days;
-                                  updateRecommendation();
-                                });
-                              },
-                            );
-                          }).toList(),
+                        CreativeValuePicker(
+                          options: daysOptions.map((d) => "$d").toList(),
+                          selectedIndex: selectedDays == null
+                              ? null
+                              : daysOptions.indexOf(selectedDays!),
+                          onChanged: (index) {
+                            setState(() {
+                              selectedDays = daysOptions[index];
+                              updateRecommendation();
+                            });
+                          },
+                          accent: const Color(0xFF22C55E),
+                          textColor: Colors.black87,
+                          mutedColor: Colors.black54,
+                          chipBackground: Colors.white,
                         ),
 
                         const SizedBox(height: 28),
@@ -428,24 +375,23 @@ class _TimeCommitmentScreenState
 
                         const SizedBox(height: 14),
 
-                        Row(
-                          children: durationOptions.map((duration) {
-                            final bool selected =
-                                selectedDuration == duration;
-
-                            return _buildOptionChip(
-                              label: duration == 90
-                                  ? "90 min"
-                                  : "$duration min",
-                              selected: selected,
-                              onTap: () {
-                                setState(() {
-                                  selectedDuration = duration;
-                                  updateRecommendation();
-                                });
-                              },
-                            );
-                          }).toList(),
+                        CreativeValuePicker(
+                          options: durationOptions
+                              .map((d) => d == 90 ? "90 min" : "$d min")
+                              .toList(),
+                          selectedIndex: selectedDuration == null
+                              ? null
+                              : durationOptions.indexOf(selectedDuration!),
+                          onChanged: (index) {
+                            setState(() {
+                              selectedDuration = durationOptions[index];
+                              updateRecommendation();
+                            });
+                          },
+                          accent: const Color(0xFF22C55E),
+                          textColor: Colors.black87,
+                          mutedColor: Colors.black54,
+                          chipBackground: Colors.white,
                         ),
 
                         const SizedBox(height: 12),
@@ -461,17 +407,20 @@ class _TimeCommitmentScreenState
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const ExperienceScreen(),
-                        ),
-                      );
-                    },
+                    onPressed: !showRecommendation
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ExperienceScreen(),
+                              ),
+                            );
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF22C55E),
+                      disabledBackgroundColor: Colors.grey.shade300,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(22),
@@ -479,18 +428,23 @@ class _TimeCommitmentScreenState
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Text(
                           "Continue",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: showRecommendation
+                                ? Colors.white
+                                : Colors.grey.shade500,
                           ),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Icon(Icons.arrow_forward,
-                            color: Colors.white, size: 20),
+                            color: showRecommendation
+                                ? Colors.white
+                                : Colors.grey.shade500,
+                            size: 20),
                       ],
                     ),
                   ),

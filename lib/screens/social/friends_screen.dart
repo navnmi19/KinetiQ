@@ -8,6 +8,7 @@ import 'friends_controller.dart';
 import '../../themes/theme_controller.dart';
 import '../nutrition/nutrition_screen.dart';
 import '../progress/progress_screen.dart';
+import '../profile/profile_screen.dart';
 
 class FriendsScreen extends StatefulWidget {
   const FriendsScreen({super.key});
@@ -18,12 +19,15 @@ class FriendsScreen extends StatefulWidget {
 
 class _FriendsScreenState extends State<FriendsScreen> {
   // ---- bottom nav -----------------------------------------------
-  int navIndex = 3; // Friends tab active
+  // Friends is reached from within Profile now, not a tab of its own — the
+  // Profile tab stays highlighted since this is still "under" that section,
+  // but tapping it again navigates back to the Profile screen itself.
+  int navIndex = 3;
   final List<_NavItem> navItems = const [
     _NavItem(icon: Icons.home_rounded, label: "Home"),
     _NavItem(icon: Icons.restaurant_menu_rounded, label: "Nutrition"),
     _NavItem(icon: Icons.show_chart_rounded, label: "Progress"),
-    _NavItem(icon: Icons.person_rounded, label: "Friends"),
+    _NavItem(icon: Icons.person_rounded, label: "Profile"),
   ];
 
   @override
@@ -339,8 +343,6 @@ class _FriendsScreenState extends State<FriendsScreen> {
 
             return GestureDetector(
               onTap: () {
-                if (index == navIndex) return;
-
                 if (index == 0) {
                   Navigator.popUntil(context, (route) => route.isFirst);
                   return;
@@ -362,7 +364,13 @@ class _FriendsScreenState extends State<FriendsScreen> {
                   return;
                 }
 
-                setState(() => navIndex = index);
+                if (index == 3) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
+                  return;
+                }
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),

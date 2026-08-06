@@ -149,18 +149,20 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              children: [
-                const SizedBox(height: 24),
-                _buildHeader(),
-                const Spacer(),
-                _buildAnimationContainer(),
-                const SizedBox(height: 40),
-                _buildContentSwitcher(),
-                const Spacer(),
-                _buildProgressBar(),
-                const SizedBox(height: 32),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  _buildHeader(),
+                  const SizedBox(height: 32),
+                  _buildAnimationContainer(),
+                  const SizedBox(height: 32),
+                  _buildContentSwitcher(),
+                  const SizedBox(height: 32),
+                  _buildStepChecklist(),
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
           ),
         ),],)
@@ -313,45 +315,58 @@ class _ProgramGenerationScreenState extends State<ProgramGenerationScreen>
     );
   }
 
-  Widget _buildProgressBar() {
+  Widget _buildStepChecklist() {
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 400),
       opacity: _loadingComplete ? 0.0 : 1.0,
       child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: AnimatedBuilder(
-              animation: _progressController,
-              builder: (context, child) {
-                return LinearProgressIndicator(
-                  value: _progressController.value,
-                  minHeight: 8,
-                  backgroundColor: primaryGreen.withValues(alpha: 0.15),
-                  valueColor: const AlwaysStoppedAnimation<Color>(primaryGreen),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 10),
-          AnimatedBuilder(
-            animation: _progressController,
-            builder: (context, child) {
-              final percent = (_progressController.value * 100).round();
-              return Text(
-                '$percent%',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade500,
+        children: List.generate(_loadingMessages.length, (i) {
+          final done = i < _currentMessageIndex;
+          final active = i == _currentMessageIndex;
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: done
+                        ? primaryGreen
+                        : (active
+                            ? primaryGreen.withValues(alpha: 0.15)
+                            : Colors.grey.shade200),
+                    border: active
+                        ? Border.all(color: primaryGreen, width: 2)
+                        : null,
+                  ),
+                  child: done
+                      ? const Icon(Icons.check, size: 12, color: Colors.white)
+                      : null,
                 ),
-              );
-            },
-          ),
-        ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _loadingMessages[i].replaceAll('...', ''),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                      color: done || active
+                          ? Colors.black87
+                          : Colors.grey.shade400,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
+
 }
 
 /// Reveals [text] one character at a time, each letter fading in with a
