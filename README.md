@@ -114,6 +114,23 @@ The application uses a centralized theme architecture to maintain visual consist
 | VS Code | Development environment |
 
 ---
+## Screenshots
+
+### Dashboard
+
+![KINETIQ Dashboard](dashboardscreen.png)
+
+### Progress
+
+![KINETIQ Progress](progress%20screen.png)
+
+### Nutrition
+
+![KINETIQ Nutrition](nutrition%20screen.png)
+
+### Profile
+
+![KINETIQ Profile](profile%20screen.png)
 
 ## Architecture
 
