@@ -424,12 +424,12 @@ class _BodyMetricsScreenState extends State<BodyMetricsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: const Color(0xFF22C55E).withOpacity(0.4),
+          color: const Color(0xFF22C55E).withValues(alpha: 0.4),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -530,7 +530,7 @@ class _BodyMetricsScreenState extends State<BodyMetricsScreen> {
                           border: Border.all(color: getBMIColor(), width: 3),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -582,7 +582,7 @@ class _MetricCard extends StatelessWidget {
               : null,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -906,7 +906,7 @@ class _RulerPickerState extends State<_RulerPicker> {
                     borderRadius: BorderRadius.circular(4),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF22C55E).withOpacity(0.55),
+                        color: const Color(0xFF22C55E).withValues(alpha: 0.55),
                         blurRadius: 10,
                         spreadRadius: 1,
                       ),
@@ -945,7 +945,7 @@ class _RulerTick extends StatelessWidget {
     final double tickHeight = isMajor ? 34 : (isMedium ? 22 : 12);
     final double tickWidth = isMajor ? 3 : (isMedium ? 2 : 1);
     final Color tickColor = isMajor
-        ? Colors.black.withOpacity(0.75)
+        ? Colors.black.withValues(alpha: 0.75)
         : (isMedium ? Colors.black38 : Colors.black26);
 
     return SizedBox(
