@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gym_app/screens/onboarding/basic_info_screen.dart';
 import 'package:gym_app/widgets/background_decoration.dart';
 
@@ -11,10 +11,9 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  static const Color mint50 = Color(0xFFD1FAE5);
-  static const Color mint25 = Color(0xFFECFDF5);
-  static const Color green = Color(0xFF22C55E);
-  static const Color darkText = Color(0xFF14532D);
+  static const Color orange = Color(0xFFFF8A00);
+  static const Color darkBackground = Color(0xFF080808);
+  static const Color blackBackground = Colors.black;
 
   @override
   void initState() {
@@ -37,11 +36,17 @@ class _SplashScreenState extends State<SplashScreen> {
         reverseTransitionDuration: const Duration(milliseconds: 600),
         pageBuilder: (context, animation, secondaryAnimation) =>
             const BasicInfoScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        transitionsBuilder: (
+          context,
+          animation,
+          secondaryAnimation,
+          child,
+        ) {
           final curved = CurvedAnimation(
             parent: animation,
             curve: Curves.easeOutCubic,
           );
+
           return FadeTransition(
             opacity: curved,
             child: SlideTransition(
@@ -60,6 +65,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -67,90 +73,151 @@ class _SplashScreenState extends State<SplashScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [mint50, mint25, Colors.white],
-            stops: [0.0, 0.5, 1.0],
+            colors: [
+              blackBackground,
+              darkBackground,
+              blackBackground,
+            ],
+            stops: [
+              0.0,
+              0.5,
+              1.0,
+            ],
           ),
         ),
         child: Stack(
           children: [
+            // Orange workout silhouettes
             const BackgroundDecorations(),
+
             SafeArea(
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // ------------------------------------------------
+                    // WELCOME TEXT
+                    // ------------------------------------------------
+
                     Text(
                       "WELCOME TO",
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: darkText.withValues(alpha: 0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         letterSpacing: 3,
                       ),
                     ),
+
                     const SizedBox(height: 20),
+
+                    // ------------------------------------------------
+                    // KINETIQ BRAND
+                    // ------------------------------------------------
+
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Icon(Icons.fitness_center, color: green, size: 34),
+                        // White dumbbell
+                        Icon(
+                          Icons.fitness_center,
+                          color: Colors.white,
+                          size: 34,
+                        ),
+
                         SizedBox(width: 10),
+
+                        // Orange KinetiQ
                         Text(
-                          "GYMIN",
+                          "KinetiQ",
                           style: TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.w800,
-                            color: darkText,
+                            color: orange,
                             letterSpacing: 1.5,
                           ),
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 8),
+
+                    // ------------------------------------------------
+                    // TAGLINE
+                    // ------------------------------------------------
+
                     RichText(
                       text: const TextSpan(
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.black54,
+                          color: Colors.white54,
                           fontWeight: FontWeight.w500,
                         ),
                         children: [
                           TextSpan(
                             text: "Stronger ",
                             style: TextStyle(
-                              color: green,
+                              color: orange,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          TextSpan(text: "every day."),
+                          TextSpan(
+                            text: "every day.",
+                          ),
                         ],
                       ),
                     ),
+
                     const SizedBox(height: 40),
-                    Lottie.asset(
-                      'assets/animations/pushup.lottie',
+
+                    // ------------------------------------------------
+                    // KQ LOGO
+                    // ------------------------------------------------
+
+                    SizedBox(
                       width: 150,
                       height: 150,
-                      repeat: true,
+                      child: Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: SvgPicture.asset(
+                          'assets/kinetiq_logo.svg',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     ),
+
                     const SizedBox(height: 40),
+
+                    // ------------------------------------------------
+                    // PROGRESS BAR
+                    // ------------------------------------------------
+
                     SizedBox(
                       width: 120,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(99),
                         child: LinearProgressIndicator(
                           minHeight: 4,
-                          backgroundColor: green.withValues(alpha: 0.15),
-                          valueColor: const AlwaysStoppedAnimation(green),
+                          backgroundColor:
+                              orange.withValues(alpha: 0.15),
+                          valueColor:
+                              const AlwaysStoppedAnimation(orange),
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 12),
+
+                    // ------------------------------------------------
+                    // LOADING TEXT
+                    // ------------------------------------------------
+
                     Text(
                       "Preparing your experience...",
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: darkText.withValues(alpha: 0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                       ),
                     ),
                   ],
