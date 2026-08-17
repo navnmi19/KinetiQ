@@ -700,7 +700,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   height: 1.15,
                   color: _textPrimary,
                 ),
-                child: Text("Hey, $userName 👋"),
+                child: Text("Hey, Navneet 👋"),
               ),
               const SizedBox(height: 8),
               AnimatedDefaultTextStyle(

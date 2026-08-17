@@ -74,11 +74,11 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   UserProfileData _profile = const UserProfileData(
-    name: "Alex Carter",
+    name: "Navneet Mishra",
     gender: "Male",
-    age: 24,
-    heightCm: 178,
-    weightKg: 74,
+    age: 19,
+    heightCm: 174,
+    weightKg: 65,
     primaryGoal: "Build Muscle",
     secondaryGoal: "Improve Fitness",
     targetBodyParts: ["Chest", "Back", "Legs"],

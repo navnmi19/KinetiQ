@@ -16,6 +16,16 @@ class TargetBodyPartsScreen extends StatefulWidget {
 class _TargetBodyPartsScreenState
     extends State<TargetBodyPartsScreen> {
 
+  // KinetiQ dark theme palette
+  static const Color kBackgroundStart = Colors.black;
+  static const Color kBackgroundMid = Color(0xFF080808);
+  static const Color kBackgroundEnd = Colors.black;
+  static const Color kAccentOrange = Color(0xFFFF8A00);
+  static const Color kCardDark = Color(0xFF151515);
+  static const Color kSurfaceDark = Color(0xFF202020);
+  static const Color kTextPrimary = Colors.white;
+  static const Color kTextSecondary = Colors.white70;
+
   final List<String> selectedParts = [];
   final List<String> selectedInjuries = [];
 
@@ -87,22 +97,22 @@ class _TargetBodyPartsScreenState
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF22C55E) : Colors.white,
+          color: kCardDark,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: selected ? const Color(0xFF22C55E) : Colors.black12,
+            color: selected ? kAccentOrange : Colors.white12,
             width: 1.5,
           ),
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF22C55E).withValues(alpha: 0.35),
+                    color: kAccentOrange.withValues(alpha: 0.35),
                     blurRadius: 16,
                     spreadRadius: 1,
                   ),
                 ]
               : const [
-                  BoxShadow(color: Colors.black12, blurRadius: 5),
+                  BoxShadow(color: Colors.black45, blurRadius: 5),
                 ],
         ),
         child: Row(
@@ -111,7 +121,7 @@ class _TargetBodyPartsScreenState
               selected
                   ? Icons.check_circle_rounded
                   : Icons.favorite_border_rounded,
-              color: selected ? Colors.white : const Color(0xFF22C55E),
+              color: selected ? kAccentOrange : kTextSecondary,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -120,7 +130,7 @@ class _TargetBodyPartsScreenState
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : Colors.black87,
+                  color: selected ? kAccentOrange : kTextPrimary,
                 ),
               ),
             ),
@@ -150,16 +160,16 @@ class _TargetBodyPartsScreenState
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF22C55E) : Colors.white,
+          color: kSurfaceDark,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: selected ? const Color(0xFF22C55E) : Colors.black12,
+            color: selected ? kAccentOrange : Colors.white12,
             width: 1.5,
           ),
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+                    color: kAccentOrange.withValues(alpha: 0.3),
                     blurRadius: 14,
                     spreadRadius: 1,
                   ),
@@ -172,7 +182,7 @@ class _TargetBodyPartsScreenState
             Icon(
               icon,
               size: 18,
-              color: selected ? Colors.white : const Color(0xFF22C55E),
+              color: selected ? kAccentOrange : kTextSecondary,
             ),
             const SizedBox(width: 8),
             Text(
@@ -180,9 +190,81 @@ class _TargetBodyPartsScreenState
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : Colors.black87,
+                color: selected ? kAccentOrange : kTextPrimary,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBodyPartCard(Map<String, String> part) {
+    final bool selected = selectedParts.contains(part["name"]);
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (selected) {
+            selectedParts.remove(part["name"]);
+          } else {
+            selectedParts.add(part["name"]!);
+          }
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: kCardDark,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? kAccentOrange : Colors.white12,
+            width: 1.5,
+          ),
+          boxShadow: [
+            const BoxShadow(
+              color: Colors.black45,
+              blurRadius: 5,
+            ),
+            if (selected)
+              BoxShadow(
+                color: kAccentOrange.withValues(alpha: 0.3),
+                blurRadius: 18,
+                spreadRadius: 1,
+              ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                selected ? kAccentOrange : Colors.white,
+                BlendMode.srcIn,
+              ),
+              child: Image.asset(
+                part["image"]!,
+                height: 80,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              part["name"]!,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: selected ? kAccentOrange : kTextPrimary,
+              ),
+            ),
+            if (selected)
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Icon(
+                  Icons.fitness_center,
+                  color: kAccentOrange,
+                ),
+              ),
           ],
         ),
       ),
@@ -198,220 +280,151 @@ class _TargetBodyPartsScreenState
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFFD1FAE5),
-              Colors.white,
+              kBackgroundStart,
+              kBackgroundMid,
+              kBackgroundEnd,
             ],
           ),
         ),
 
         child: Stack(children: [const BackgroundDecorations(),
-          SafeArea(child: Padding(
-            padding: const EdgeInsets.all(20),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
 
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
-              children: [
-
-                const SizedBox(height: 20),
-
-                const Text(
-                  "Target Body Parts",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                const Text(
-                  "Select all the areas you'd like to focus on",
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black54,
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                Expanded(
-                  child: GridView.builder(
-                    itemCount: bodyParts.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 15,
-                      mainAxisSpacing: 15,
+                  const Text(
+                    "Target Body Parts",
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: kTextPrimary,
                     ),
-                    itemBuilder: (context, index) {
-
-                      final part = bodyParts[index];
-                      bool selected =
-                          selectedParts.contains(
-                              part["name"]);
-
-                      return GestureDetector(
-                        onTap: () {
-
-                          setState(() {
-
-                            if (selected) {
-                              selectedParts.remove(
-                                  part["name"]);
-                            } else {
-                              selectedParts.add(
-                                  part["name"]!);
-                            }
-                          });
-                        },
-
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          curve: Curves.easeOutCubic,
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? const Color(0xFF22C55E)
-                                : Colors.white,
-
-                            borderRadius:
-                                BorderRadius.circular(20),
-
-                            boxShadow: [
-                              const BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 5,
-                              ),
-                              if (selected)
-                                BoxShadow(
-                                  color: const Color(0xFF22C55E)
-                                      .withValues(alpha: 0.25),
-                                  blurRadius: 16,
-                                  spreadRadius: 1,
-                                ),
-                            ],
-                          ),
-
-                          child: Column(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-
-                            children: [
-
-                              Image.asset(
-                                part["image"]!,
-                                height: 80,
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              Text(
-                                part["name"]!,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight:
-                                      FontWeight.bold,
-                                  color: selected
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                              ),
-
-                              if (selected)
-                                const Padding(
-                                  padding:
-                                      EdgeInsets.only(
-                                          top: 8),
-
-                                  child: Icon(
-                                    Icons.fitness_center,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
                   ),
-                ),
-                const SizedBox(height: 20),
 
-const Text(
-  "Any injuries or limitations?",
-  style: TextStyle(
-    fontSize: 22,
-    fontWeight: FontWeight.bold,
-  ),
-),
+                  const SizedBox(height: 10),
 
-const SizedBox(height: 6),
+                  const Text(
+                    "Select all the areas you'd like to focus on",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: kTextSecondary,
+                    ),
+                  ),
 
-const Text(
-  "Tap all that apply — we'll tailor your program around them.",
-  style: TextStyle(
-    fontSize: 14,
-    color: Colors.black54,
-  ),
-),
+                  const SizedBox(height: 20),
 
-const SizedBox(height: 15),
+                  // Single scrollable area holding BOTH the body-part grid
+                  // and the injury section. Continue stays outside this.
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GridView.builder(
+                            itemCount: bodyParts.length,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 15,
+                              mainAxisSpacing: 15,
+                            ),
+                            itemBuilder: (context, index) {
+                              final part = bodyParts[index];
+                              return _buildBodyPartCard(part);
+                            },
+                          ),
 
-_buildNoneCard(),
+                          const SizedBox(height: 28),
 
-const SizedBox(height: 12),
+                          const Text(
+                            "Any injuries or limitations?",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: kTextPrimary,
+                            ),
+                          ),
 
-Wrap(
-  spacing: 10,
-  runSpacing: 10,
-  children: injuries
-      .where((injury) => injury != "None")
-      .map(_buildInjuryChip)
-      .toList(),
-),
-const SizedBox(height: 20),
+                          const SizedBox(height: 6),
 
-SizedBox(
-  width: double.infinity,
-  height: 60,
-  child: ElevatedButton(
-    onPressed: selectedParts.isEmpty
-        ? null
-        : () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    const TimeCommitmentScreen(),
+                          const Text(
+                            "Tap all that apply — we'll tailor your program around them.",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: kTextSecondary,
+                            ),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          _buildNoneCard(),
+
+                          const SizedBox(height: 12),
+
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: injuries
+                                .where((injury) => injury != "None")
+                                .map(_buildInjuryChip)
+                                .toList(),
+                          ),
+
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: selectedParts.isEmpty
+                          ? null
+                          : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const TimeCommitmentScreen(),
+                                ),
+                              );
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kAccentOrange,
+                        disabledBackgroundColor: kSurfaceDark,
+                        elevation: selectedParts.isEmpty ? 0 : 8,
+                        shadowColor: kAccentOrange.withValues(alpha: 0.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Text(
+                        "Continue",
+                        style: TextStyle(
+                          fontSize: 22,
+                          color: selectedParts.isEmpty
+                              ? Colors.white38
+                              : Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            );
-          },
-
-    style: ElevatedButton.styleFrom(
-      backgroundColor: const Color(0xFF22C55E),
-      disabledBackgroundColor: Colors.grey.shade300,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-    ),
-
-    child: Text(
-      "Continue",
-      style: TextStyle(
-        fontSize: 22,
-        color: selectedParts.isEmpty
-            ? Colors.grey.shade500
-            : Colors.white,
-      ),
-    ),
-  ),
-),
-
-              ],
             ),
           ),
-        ),],)
+        ],)
       ),
     );
   }

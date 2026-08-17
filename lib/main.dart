@@ -12,7 +12,7 @@ class WorkoutApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Workout',
+      title: 'KinetiQ',
       home: const SplashScreen(),
     );
   }
